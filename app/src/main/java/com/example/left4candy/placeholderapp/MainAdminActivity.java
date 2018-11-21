@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.ListFragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,6 +16,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.support.v7.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Registry;
@@ -33,20 +37,16 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
     String userUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+    private static final String TAG ="MainAdminActivity";
+    private SectionsPageAdapter mSectionsPageAdapter;
+    private ViewPager mViewPager;
+
     private FirebaseAuth mAuth;
     private StorageReference mStorage;
-    private StorageReference backgroundImageRef;
     private StorageReference profileImageRef;
 
-    private StorageReference thisReference;
-    private ImageView thisImage;
-
-    private static final int GALLERY_INTENT = 2;
-    private ImageView backgroundImage;
     private ImageView profileImage;
     private TextView userTextView;
-    private Button buttonLogout;
-    private Button mSelectImage;
 
     private ProgressDialog mProgressDialog;
 
@@ -65,76 +65,29 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
         mProgressDialog = new ProgressDialog(this);
 
-        backgroundImageRef = mStorage.child("images/background.jpg");
         profileImageRef = mStorage.child("images/profile.jpg");
-        backgroundImage = findViewById(R.id.backgroundImage);
         profileImage = findViewById(R.id.profileImage);
-
         userTextView = (TextView) findViewById(R.id.textViewUserEmail);
         userTextView.setText(user.getEmail());
 
-        buttonLogout = (Button) findViewById(R.id.logoutPlaceholder);
-        buttonLogout.setOnClickListener(this);
-
         loadProfile();
 
-        profileImage = findViewById(R.id.profileImage);
-        profileImage.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                thisReference = profileImageRef;
-                thisImage = profileImage;
-                startActivityForResult(intent, GALLERY_INTENT);
-            }
-        });
+        mViewPager = (ViewPager) findViewById(R.id.container);
+        setupViewPager(mViewPager);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+    }
 
-        mSelectImage = (Button) findViewById(R.id.selectImage);
-        mSelectImage.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                thisReference = backgroundImageRef;
-                thisImage = backgroundImage;
-                startActivityForResult(intent, GALLERY_INTENT);
-            }
-        });
+    private void setupViewPager(ViewPager viewPager){
+        SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
+        adapter.addFragment(new ListFragment(), "List");
+        adapter.addFragment(new OverviewFragment(), "Overview");
+        adapter.addFragment(new AccountFragment(), "Account");
+        viewPager.setAdapter(adapter);
     }
 
     @Override
     public void onClick(View v) {
-        if(v == buttonLogout){
-            mAuth.signOut();
-            finish();
-            startActivity(new Intent(this, LoginActivity.class));
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == GALLERY_INTENT && resultCode == RESULT_OK){
-            mProgressDialog.setMessage("Uploading...");
-            mProgressDialog.show();
-            Uri uri = data.getData();
-
-            thisReference.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(MainAdminActivity.this, "Upload Done", Toast.LENGTH_LONG).show();
-                    mProgressDialog.dismiss();
-                    loadImage(thisReference, thisImage);
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-
-                }
-            });
-        }
     }
 
     public void loadImage(StorageReference ref, final ImageView imgV){
@@ -142,20 +95,25 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
             @Override
             public void onSuccess(Uri uri) {
                 Glide.with(MainAdminActivity.this).load(uri).into(imgV);
-                Toast.makeText(MainAdminActivity.this, "Background Loaded", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainAdminActivity.this, "Profile picture loaded", Toast.LENGTH_LONG).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(MainAdminActivity.this, "Background failed", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainAdminActivity.this, "Profile picture failed to load", Toast.LENGTH_LONG).show();
             }
         });
     }
 
     public void loadProfile(){
-        loadImage(backgroundImageRef, backgroundImage);
         loadImage(profileImageRef, profileImage);
     }
+
+    public void imageChanged(){
+        loadImage(profileImageRef, profileImage);
+    }
+
+
 
     @GlideModule
     public class MyAppGlideModule extends AppGlideModule {
