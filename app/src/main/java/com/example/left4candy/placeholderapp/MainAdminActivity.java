@@ -37,9 +37,13 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
     String userUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+    private OverviewFragment overviewFragment = new OverviewFragment();
+    private AccountFragment accountFragment = new AccountFragment();
+    private ListFragment listFragment = new ListFragment();
+
     private static final String TAG ="MainAdminActivity";
     private SectionsPageAdapter mSectionsPageAdapter;
-    private ViewPager mViewPager;
+    private CustomViewPager mViewPager;
 
     private FirebaseAuth mAuth;
     private StorageReference mStorage;
@@ -72,7 +76,7 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
         loadProfile();
 
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (CustomViewPager) findViewById(R.id.container);
         setupViewPager(mViewPager);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -80,9 +84,9 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
     private void setupViewPager(ViewPager viewPager){
         SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
-        adapter.addFragment(new ListFragment(), "List");
-        adapter.addFragment(new OverviewFragment(), "Overview");
-        adapter.addFragment(new AccountFragment(), "Account");
+        adapter.addFragment(listFragment, "List");
+        adapter.addFragment(overviewFragment, "Overview");
+        adapter.addFragment(accountFragment, "Account");
         viewPager.setAdapter(adapter);
     }
 
@@ -109,8 +113,8 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
         loadImage(profileImageRef, profileImage);
     }
 
-    public void imageChanged(){
-        loadImage(profileImageRef, profileImage);
+    public void changeOverviewBackground() {
+        overviewFragment.loadProfile();
     }
 
 

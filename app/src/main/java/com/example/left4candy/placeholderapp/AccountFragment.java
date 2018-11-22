@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,8 +34,7 @@ public class AccountFragment extends Fragment {
     private static final String TAG = "AccountFragment";
     String userUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-    private MainAdminActivity mainAdminActivity;
-    private OverviewFragment overviewFragment;
+    private int picId;
 
     private FirebaseAuth mAuth;
     private StorageReference mStorage;
@@ -65,7 +65,7 @@ public class AccountFragment extends Fragment {
         FirebaseUser user = mAuth.getCurrentUser();
         backgroundImageRef = mStorage.child("images/background.jpg");
         profileImageRef = mStorage.child("images/profile.jpg");
-        customImagesRef = mStorage.child("images/custom/");
+        customImagesRef = mStorage.child("images/custom/" + picId);
 
         changeProfileImage = view.findViewById(R.id.changeProfileImage);
 
@@ -133,9 +133,9 @@ public class AccountFragment extends Fragment {
                     mProgressDialog.dismiss();
                     if(thisImage == changeProfileImage) {
                         loadImage(thisReference, thisImage);
-                        //MainAdminActivity.i);
+                        ((MainAdminActivity)getActivity()).loadProfile();
                     }
-                    //overviewFragment.imageChanged();
+                    ((MainAdminActivity)getActivity()).changeOverviewBackground();
 
                 }
             }).addOnFailureListener(new OnFailureListener() {

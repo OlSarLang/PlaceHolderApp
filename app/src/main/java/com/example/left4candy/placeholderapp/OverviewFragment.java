@@ -54,10 +54,6 @@ public class OverviewFragment extends Fragment {
         loadImage(backgroundImageRef, backgroundImage);
     }
 
-    public void imageChanged(){
-        loadImage(backgroundImageRef, backgroundImage);
-    }
-
     public void loadImage(StorageReference ref, final ImageView imgV){
         ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
@@ -82,4 +78,5 @@ public class OverviewFragment extends Fragment {
                     (ResourceDecoder<StorageReference, MainAdminActivity>) new FirebaseImageLoader.Factory());
         }
     }
+
 }
