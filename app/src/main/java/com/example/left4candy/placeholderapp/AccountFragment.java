@@ -73,7 +73,6 @@ public class AccountFragment extends Fragment {
         userTextView.setText(user.getEmail());
 
         buttonLogout = view.findViewById(R.id.logoutPlaceholder);
-        buttonLogout.setOnClickListener((View.OnClickListener) getActivity());
 
         loadProfile();
 
