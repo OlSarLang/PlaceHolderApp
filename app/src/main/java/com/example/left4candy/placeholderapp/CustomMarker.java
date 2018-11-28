@@ -2,6 +2,8 @@ package com.example.left4candy.placeholderapp;
 
 import android.widget.ImageView;
 
+import java.util.ArrayList;
+
 public class CustomMarker {
 
     //What I need to create
@@ -13,21 +15,28 @@ public class CustomMarker {
     private ImageView image;
     private String solidColor;
 
-    private String header;
-    private String subHeaderOne;
-    private String subHeaderTwo;
+    private MarkerItem markerItem;
+
+    private ArrayList<MarkerItem> markerItems = new ArrayList<>();
     //TODO Fixa ett sätt att få referens från bilden jag valt för markören och spara den någonstans.
 
 
     public CustomMarker(int xPos, int yPos){
         this(0000, "placeholder", xPos, yPos, "yellow");
+
+        markerItem = new MarkerItem("header", "subHeaderOne", "subHeaderTwo");
+        markerItems.add(markerItem);
     }
 
     public CustomMarker(int markerId, int xPos, int yPos){
         this(markerId, "name", xPos, yPos, "yellow");
+        markerItem = new MarkerItem("header", "subHeaderOne", "subHeaderTwo");
+        markerItems.add(markerItem);
     }
 
     public CustomMarker(int markerId, String markerName, int xPos, int yPos, String solidColor){
+        markerItem = new MarkerItem("header", "subHeaderOne", "subHeaderTwo");
+        markerItems.add(markerItem);
         id++;
         this.markerId = id;
         this.markerName = markerName;
@@ -56,12 +65,17 @@ public class CustomMarker {
     public String getSolidColor() {return solidColor;}
     public void setSolidColor(String solidColor) {this.solidColor = solidColor;}
 
-    public String getSHeader() {return header;}
-    public void setHeader(String header) {this.header = header;}
+    public MarkerItem getMarkerItem() {
+        return markerItem;
+    }
+    public void setMarkerItem(MarkerItem markerItem) {
+        this.markerItem = markerItem;
+    }
 
-    public String getSubHeaderOne() {return subHeaderOne;}
-    public void setSubHeaderOne(String subHeaderOne) {this.subHeaderOne = subHeaderOne;}
-
-    public String getSubHeaderTwo() {return subHeaderTwo;}
-    public void setSubHeaderTwo(String subHeaderTwo) {this.subHeaderTwo = subHeaderTwo;}
+    public ArrayList<MarkerItem> getMarkerItems() {
+        return markerItems;
+    }
+    public void setMarkerItems(ArrayList<MarkerItem> markerItems) {
+        this.markerItems = markerItems;
+    }
 }

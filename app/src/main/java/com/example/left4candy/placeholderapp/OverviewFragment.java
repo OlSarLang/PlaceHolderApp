@@ -18,9 +18,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -55,16 +57,13 @@ public class OverviewFragment extends Fragment {
     private RelativeLayout myLayout;
 
     private List<CustomMarker> customMarkerList; //List over all loaded markers
-    private Map<Integer, Integer> pressableCustomMarkerList; //List of the markers shown, this is used to figure out which marker the user pressed and then gets that marker from customMarkerList
+    private Map<CustomMarker, ImageButton> pressableCustomMarkerList; //List of the markers shown, this is used to figure out which marker the user pressed and then gets that marker from customMarkerList
     private List<ImageButton> visibleCustomMarkerList; //The visible markers of the above mentioned list
     private CustomMarker customMarker;
     private VisibleMarker visibleMarker;
     private ImageButton imageCircle;
-    private String markerColor = "green";
 
-    private ArrayList<String> headerList = new ArrayList<>();
-    private ArrayList<String> subHeaderOneList = new ArrayList<>();
-    private ArrayList<String> subHeaderTwoList = new ArrayList<>();
+    private String markerColor = "green";
 
     private Bitmap smallRed;
     private Bitmap smallGreen;
@@ -90,6 +89,8 @@ public class OverviewFragment extends Fragment {
         backgroundImageRef = mStorage.child("images/background.jpg");
         customImagesRef = mStorage.child("images/custom/" + picId);
 
+        //TODO ondata change listener instead of loadimages
+
         BitmapDrawable bitmapRed = (BitmapDrawable)getResources().getDrawable(R.drawable.colorred);
         BitmapDrawable bitmapGreen = (BitmapDrawable)getResources().getDrawable(R.drawable.colorgreen);
         BitmapDrawable bitmapBlue = (BitmapDrawable)getResources().getDrawable(R.drawable.colorblue);
@@ -107,8 +108,9 @@ public class OverviewFragment extends Fragment {
         smallWhite = Bitmap.createScaledBitmap(white, width, height, false);
 
         customMarkerList = new ArrayList<>();
-        pressableCustomMarkerList = new HashMap<Integer, Integer>();
         visibleCustomMarkerList = new ArrayList<>();
+
+
 
         myLayout = view.findViewById(R.id.rl_container);
         backgroundImage = view.findViewById(R.id.overviewBackground);
@@ -136,18 +138,35 @@ public class OverviewFragment extends Fragment {
                 return false;
             }
         });
+
+        //TODO OnTouch for the visibleMarkerList()
+
+
     }
 
     public void createMarker(int x, int y){
         final int placeX = x;
         final int placeY = y;
+
+        customMarker = new CustomMarker(placeX, placeY);
+        customMarker.setSolidColor(markerColor);
+        //TODO set id etc
+
+        customMarker.setSolidColor("green");
+        customMarker.setMarkerName("Hope it works");
+
         final AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
         View mView = getLayoutInflater().inflate(R.layout.custom_marker_info, null);
         //TODO Fields to give names, color, image etc should be declared here
         Button saveNewMarker = mView.findViewById(R.id.saveButton);
         Button cancelNewMarker = mView.findViewById(R.id.cancelButton);
+        //TODO Fix so that you can choose colors/images
+        ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
+        markerImage.setImageResource(R.drawable.colorgreen);
+        final EditText markerName = mView.findViewById(R.id.markerName);
 
         aBuilder.setView(mView);
+        initRecyclerView(mView);
         final AlertDialog dialog = aBuilder.create();
         Log.d("AlertDialog ", "has been created");
 
@@ -161,15 +180,13 @@ public class OverviewFragment extends Fragment {
         saveNewMarker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                customMarker = new CustomMarker(placeX, placeY);
-                customMarker.setSolidColor(markerColor);
-                //TODO set id etc
-                customMarker.setSolidColor("green");
-                customMarker.setMarkerName("Hope it works");
+
+                customMarker.setMarkerName(markerName.getText().toString());
                 customMarkerList.add(customMarker);
 
                 Toast.makeText(getContext(), "Marker added", Toast.LENGTH_SHORT).show();
                 loadMarkers(customMarker);
+                //TODO save to database
                 dialog.dismiss();
 
             }
@@ -179,7 +196,6 @@ public class OverviewFragment extends Fragment {
 
     public void loadMarkers(CustomMarker customMarker){
         visibleMarker = new VisibleMarker(customMarker.getMarkerId(), customMarker.getxPos(), customMarker.getyPos());
-        pressableCustomMarkerList.put(customMarker.getMarkerId(), visibleMarker.getMarkerId());
 
         imageCircle = new ImageButton(getActivity());
         imageCircle.setForegroundGravity(Gravity.LEFT);
@@ -188,9 +204,60 @@ public class OverviewFragment extends Fragment {
         );
 
         layoutParams.setMargins(visibleMarker.getxPos(), visibleMarker.getyPos(), 0, 0);
-        imageCircle.setImageBitmap(smallRed);
+        imageCircle.setImageBitmap(smallGreen);
         imageCircle.setLayoutParams(layoutParams);
         myLayout.addView(imageCircle);
+        visibleCustomMarkerList.add(imageCircle);
+
+        imageCircle.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                ImageButton clickedButton = (ImageButton) v;
+                int index = visibleCustomMarkerList.indexOf(clickedButton);
+                if(index!=-1){
+                    System.out.println("Clicked marker " + index);
+                    showMarker(customMarkerList.get(index));
+                }
+            }
+        });
+    }
+
+    public void showMarker(final CustomMarker customMarker){
+        customMarker.getSolidColor();
+
+        final AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
+        View mView = getLayoutInflater().inflate(R.layout.custom_marker_info, null);
+        //TODO Fields to give names, color, image etc should be declared here
+        Button saveNewMarker = mView.findViewById(R.id.saveButton);
+        Button cancelNewMarker = mView.findViewById(R.id.cancelButton);
+        //TODO Fix so that you can choose colors/images
+        final ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
+        markerImage.setImageResource(R.drawable.colorgreen);
+        TextView markerId = mView.findViewById(R.id.markerId);
+        final EditText markerName = mView.findViewById(R.id.markerName);
+        markerName.setText(customMarker.getMarkerName());
+
+        aBuilder.setView(mView);
+        initRecyclerView(mView);
+        final AlertDialog dialog = aBuilder.create();
+        Log.d("AlertDialog ", "has been created");
+
+        cancelNewMarker.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick (View view){
+                dialog.dismiss();
+            }
+        });
+
+        saveNewMarker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO save to database
+                customMarker.setMarkerName(markerName.getText().toString());
+                dialog.dismiss();
+
+            }
+        });
+        dialog.show();
     }
 
 
@@ -224,12 +291,12 @@ public class OverviewFragment extends Fragment {
         }
     }
     //END IMAGES//
-    /*
-    private void initRecyclerView(){
-        RecyclerView recyclerView = findViewById(R.id.marker_recycler_view);
-        MarkerRecyclerViewAdapter recyclerViewAdapter = new MarkerRecyclerViewAdapter(headerList, subHeaderOneList, subHeaderTwoList, getContext());
+
+    private void initRecyclerView(View view){
+        RecyclerView recyclerView = view.findViewById(R.id.marker_recycler_view);
+        MarkerRecyclerViewAdapter recyclerViewAdapter = new MarkerRecyclerViewAdapter(customMarker.getMarkerItems(), getContext());
         recyclerView.setAdapter(recyclerViewAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-    }*/
+    }
 
 }

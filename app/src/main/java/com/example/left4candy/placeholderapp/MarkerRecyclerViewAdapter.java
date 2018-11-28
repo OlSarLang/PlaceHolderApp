@@ -21,15 +21,12 @@ public class MarkerRecyclerViewAdapter extends RecyclerView.Adapter<MarkerRecycl
 
     private static final String TAG = "MarkerRecyclerViewAdapt";
 
-    private ArrayList<String> headerList = new ArrayList<>();
-    private ArrayList<String> subHeaderOneList = new ArrayList<>();
-    private ArrayList<String> subHeaderTwoList =  new ArrayList<>();
+    private ArrayList<MarkerItem> markerItems;
     private Context context;
 
-    public MarkerRecyclerViewAdapter(ArrayList<String> headerList, ArrayList<String> subHeaderOneList, ArrayList<String> subHeaderTwoList, Context context) {
-        this.headerList = headerList;
-        this.subHeaderOneList = subHeaderOneList;
-        this.subHeaderTwoList = subHeaderTwoList;
+    public MarkerRecyclerViewAdapter(ArrayList<MarkerItem> markerItems, Context context) {
+        super();
+        this.markerItems = markerItems;
         this.context = context;
     }
 
@@ -44,19 +41,17 @@ public class MarkerRecyclerViewAdapter extends RecyclerView.Adapter<MarkerRecycl
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: called");
-        holder.header.setText(headerList.get(position));
-        holder.subHeaderOne.setText(subHeaderOneList.get(position));
-        holder.subHeaderTwo.setText(subHeaderTwoList.get(position));
+        holder.header.setText(markerItems.get(position).getHeader());
+        holder.subHeaderOne.setText(markerItems.get(position).getSubHeaderOne());
+        holder.subHeaderTwo.setText(markerItems.get(position).getSubHeaderTwo());
     }
 
     @Override
     public int getItemCount() {
-        return headerList.size();
+        return markerItems.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
-
-        TextView id;
         EditText header;
         EditText subHeaderOne;
         EditText subHeaderTwo;
@@ -64,7 +59,6 @@ public class MarkerRecyclerViewAdapter extends RecyclerView.Adapter<MarkerRecycl
 
         public ViewHolder(View itemView){
             super(itemView);
-            id = itemView.findViewById(R.id.idTextView);
             header = itemView.findViewById(R.id.editText0);
             subHeaderOne = itemView.findViewById(R.id.editText1);
             subHeaderTwo = itemView.findViewById(R.id.editText2);
