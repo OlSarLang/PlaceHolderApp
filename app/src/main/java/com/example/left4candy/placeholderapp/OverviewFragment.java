@@ -63,13 +63,13 @@ public class OverviewFragment extends Fragment {
     private VisibleMarker visibleMarker;
     private ImageButton imageCircle;
 
-    private String markerColor = "green";
+    private RecyclerView recyclerView;
 
-    private Bitmap smallRed;
-    private Bitmap smallGreen;
-    private Bitmap smallBlue;
-    private Bitmap smallYellow;
-    private Bitmap smallWhite;
+    private Bitmap redMarker;
+    private Bitmap greenMarker;
+    private Bitmap blueMarker;
+    private Bitmap yellowMarker;
+    private Bitmap whiteMarker;
 
     private String newMarkerId;
     private String oldMarkerId;
@@ -101,11 +101,11 @@ public class OverviewFragment extends Fragment {
         Bitmap blue = bitmapBlue.getBitmap();
         Bitmap yellow = bitmapYellow.getBitmap();
         Bitmap white = bitmapWhite.getBitmap();
-        smallRed = Bitmap.createScaledBitmap(red, width, height, false);
-        smallGreen = Bitmap.createScaledBitmap(green, width, height, false);
-        smallBlue = Bitmap.createScaledBitmap(blue, width, height, false);
-        smallYellow = Bitmap.createScaledBitmap(yellow, width, height, false);
-        smallWhite = Bitmap.createScaledBitmap(white, width, height, false);
+        redMarker = Bitmap.createScaledBitmap(red, width, height, false);
+        greenMarker = Bitmap.createScaledBitmap(green, width, height, false);
+        blueMarker = Bitmap.createScaledBitmap(blue, width, height, false);
+        yellowMarker = Bitmap.createScaledBitmap(yellow, width, height, false);
+        whiteMarker = Bitmap.createScaledBitmap(white, width, height, false);
 
         customMarkerList = new ArrayList<>();
         visibleCustomMarkerList = new ArrayList<>();
@@ -149,10 +149,9 @@ public class OverviewFragment extends Fragment {
         final int placeY = y;
 
         customMarker = new CustomMarker(placeX, placeY);
-        customMarker.setSolidColor(markerColor);
+        customMarker.setSolidColor(greenMarker);
         //TODO set id etc
 
-        customMarker.setSolidColor("green");
         customMarker.setMarkerName("Hope it works");
 
         final AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
@@ -160,15 +159,23 @@ public class OverviewFragment extends Fragment {
         //TODO Fields to give names, color, image etc should be declared here
         Button saveNewMarker = mView.findViewById(R.id.saveButton);
         Button cancelNewMarker = mView.findViewById(R.id.cancelButton);
+        Button addFieldButton = mView.findViewById(R.id.addFieldButton);
         //TODO Fix so that you can choose colors/images
         ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
         markerImage.setImageResource(R.drawable.colorgreen);
         final EditText markerName = mView.findViewById(R.id.markerName);
 
         aBuilder.setView(mView);
-        initRecyclerView(mView);
+        initRecyclerView(mView, customMarker);
         final AlertDialog dialog = aBuilder.create();
         Log.d("AlertDialog ", "has been created");
+
+        addFieldButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick (View view){
+                Toast.makeText(getContext(), "You need to create the marker before adding fields.", Toast.LENGTH_LONG).show();
+            }
+        });
 
         cancelNewMarker.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -180,9 +187,12 @@ public class OverviewFragment extends Fragment {
         saveNewMarker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 customMarker.setMarkerName(markerName.getText().toString());
                 customMarkerList.add(customMarker);
+
+                for(int i = 0; i < customMarker.getMarkerItems().size(); i++){
+                    System.out.println("Amount of items: " + i);
+                }
 
                 Toast.makeText(getContext(), "Marker added", Toast.LENGTH_SHORT).show();
                 loadMarkers(customMarker);
@@ -199,12 +209,13 @@ public class OverviewFragment extends Fragment {
 
         imageCircle = new ImageButton(getActivity());
         imageCircle.setForegroundGravity(Gravity.LEFT);
+        imageCircle.setBackground(null);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT
         );
 
         layoutParams.setMargins(visibleMarker.getxPos(), visibleMarker.getyPos(), 0, 0);
-        imageCircle.setImageBitmap(smallGreen);
+        imageCircle.setImageBitmap(customMarker.getSolidColor());
         imageCircle.setLayoutParams(layoutParams);
         myLayout.addView(imageCircle);
         visibleCustomMarkerList.add(imageCircle);
@@ -229,6 +240,7 @@ public class OverviewFragment extends Fragment {
         //TODO Fields to give names, color, image etc should be declared here
         Button saveNewMarker = mView.findViewById(R.id.saveButton);
         Button cancelNewMarker = mView.findViewById(R.id.cancelButton);
+        Button addFieldButton = mView.findViewById(R.id.addFieldButton);
         //TODO Fix so that you can choose colors/images
         final ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
         markerImage.setImageResource(R.drawable.colorgreen);
@@ -237,9 +249,19 @@ public class OverviewFragment extends Fragment {
         markerName.setText(customMarker.getMarkerName());
 
         aBuilder.setView(mView);
-        initRecyclerView(mView);
+        initRecyclerView(mView, customMarker);
         final AlertDialog dialog = aBuilder.create();
         Log.d("AlertDialog ", "has been created");
+
+        addFieldButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick (View view){
+                MarkerItem newMarkerItem = new MarkerItem();
+                customMarker.getMarkerItems().add(newMarkerItem);
+                dialog.dismiss();
+                showMarker(customMarker);
+            }
+        });
 
         cancelNewMarker.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -251,15 +273,27 @@ public class OverviewFragment extends Fragment {
         saveNewMarker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                MarkerItem markerItem = new MarkerItem();
+
                 //TODO save to database
                 customMarker.setMarkerName(markerName.getText().toString());
+                for(int i = 0; i < customMarker.getMarkerItems().size(); i++){
+                    markerItem = customMarker.getMarkerItems().get(i);
+                    View childView = recyclerView.getChildAt(i);
+                    EditText headerText = childView.findViewById(R.id.headertext);
+                    EditText subHeaderOneText = childView.findViewById(R.id.subheadertext);
+                    markerItem.setHeader(headerText.getText().toString());
+                    markerItem.setSubHeader(subHeaderOneText.getText().toString());
+                    System.out.println("Amount of items: " + i);
+                }
                 dialog.dismiss();
 
             }
         });
+
+
         dialog.show();
     }
-
 
     //IMAGES//
     public void loadProfile(){
@@ -292,11 +326,12 @@ public class OverviewFragment extends Fragment {
     }
     //END IMAGES//
 
-    private void initRecyclerView(View view){
-        RecyclerView recyclerView = view.findViewById(R.id.marker_recycler_view);
+    private void initRecyclerView(View view, CustomMarker customMarker){
+        recyclerView = view.findViewById(R.id.marker_recycler_view);
         MarkerRecyclerViewAdapter recyclerViewAdapter = new MarkerRecyclerViewAdapter(customMarker.getMarkerItems(), getContext());
         recyclerView.setAdapter(recyclerViewAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
     }
 
 }

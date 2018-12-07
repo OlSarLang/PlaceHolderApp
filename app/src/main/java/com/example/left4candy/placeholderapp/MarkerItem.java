@@ -6,14 +6,16 @@ package com.example.left4candy.placeholderapp;
 
 public class MarkerItem {
 
-    private String header = "";
-    private String subHeaderOne = "";
-    private String subHeaderTwo = "";
+    private String header = "empty";
+    private String subHeader = "empty";
 
-    public MarkerItem(String header, String subHeaderOne, String subHeaderTwo){
+    public MarkerItem(){
+        this("empty", "empty");
+    }
+
+    public MarkerItem(String header, String subHeaderOne){
         this.header = header;
-        this.subHeaderOne = subHeaderOne;
-        this.subHeaderTwo = subHeaderTwo;
+        this.subHeader = subHeaderOne;
     }
 
     public String getHeader() {
@@ -23,18 +25,12 @@ public class MarkerItem {
         this.header = header;
     }
 
-    public String getSubHeaderOne() {
-        return subHeaderOne;
+    public String getSubHeader() {
+        return subHeader;
     }
-    public void setSubHeaderOne(String subHeaderOne) {
-        this.subHeaderOne = subHeaderOne;
+    public void setSubHeader(String subHeader) {
+        this.subHeader = subHeader;
     }
 
-    public String getSubHeaderTwo() {
-        return subHeaderTwo;
-    }
-    public void setSubHeaderTwo(String subHeaderTwo) {
-        this.subHeaderTwo = subHeaderTwo;
-    }
 
 }

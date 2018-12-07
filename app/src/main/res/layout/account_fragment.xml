@@ -5,13 +5,19 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
+    <EditText
         android:id="@+id/changeableAccountName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
         android:layout_weight="0"
+        android:background="@null"
+        android:maxLength="25"
+        android:maxLines="1"
+        android:minEms="2"
+        android:scrollHorizontally="false"
+        android:textAlignment="center"
+        android:layout_gravity="center"
+        android:textStyle="bold"
         android:text="Changeable name Account"
         android:textSize="24sp" />
 

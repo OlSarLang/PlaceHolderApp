@@ -33,6 +33,7 @@ import com.google.firebase.storage.UploadTask;
 public class AccountFragment extends Fragment {
     private static final String TAG = "AccountFragment";
     String userUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    String userName;
 
     private int picId;
 
@@ -65,12 +66,12 @@ public class AccountFragment extends Fragment {
         FirebaseUser user = mAuth.getCurrentUser();
         backgroundImageRef = mStorage.child("images/background.jpg");
         profileImageRef = mStorage.child("images/profile.jpg");
-        customImagesRef = mStorage.child("images/custom/" + picId);
+        customImagesRef = mStorage.child("images/custom/");
 
         changeProfileImage = view.findViewById(R.id.changeProfileImage);
 
         userTextView = view.findViewById(R.id.changeableAccountName);
-        userTextView.setText(user.getEmail());
+        userTextView.setText(user.getDisplayName());
 
         buttonLogout = view.findViewById(R.id.logoutPlaceholder);
 

@@ -1,5 +1,6 @@
 package com.example.left4candy.placeholderapp;
 
+import android.graphics.Bitmap;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -13,7 +14,11 @@ public class CustomMarker {
     private int xPos;
     private int yPos;
     private ImageView image;
-    private String solidColor;
+    private Bitmap solidColor;
+    private String header;
+    private String subHeaderOne;
+    private String subHeaderTwo;
+
 
     private MarkerItem markerItem;
 
@@ -23,19 +28,18 @@ public class CustomMarker {
 
     public CustomMarker(int xPos, int yPos){
         this(0000, "placeholder", xPos, yPos, "yellow");
-
-        markerItem = new MarkerItem("header", "subHeaderOne", "subHeaderTwo");
+        markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
     }
 
     public CustomMarker(int markerId, int xPos, int yPos){
         this(markerId, "name", xPos, yPos, "yellow");
-        markerItem = new MarkerItem("header", "subHeaderOne", "subHeaderTwo");
+        markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
     }
 
     public CustomMarker(int markerId, String markerName, int xPos, int yPos, String solidColor){
-        markerItem = new MarkerItem("header", "subHeaderOne", "subHeaderTwo");
+        markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
         id++;
         this.markerId = id;
@@ -62,8 +66,8 @@ public class CustomMarker {
     public ImageView getImage() {return image;}
     public void setImage(ImageView image) {this.image = image;}
 
-    public String getSolidColor() {return solidColor;}
-    public void setSolidColor(String solidColor) {this.solidColor = solidColor;}
+    public Bitmap getSolidColor() {return solidColor;}
+    public void setSolidColor(Bitmap solidColor) {this.solidColor = solidColor;}
 
     public MarkerItem getMarkerItem() {
         return markerItem;
@@ -78,4 +82,10 @@ public class CustomMarker {
     public void setMarkerItems(ArrayList<MarkerItem> markerItems) {
         this.markerItems = markerItems;
     }
+
+    public String getHeader() {return header;}
+    public void setHeader(String header) {this.header = header;}
+
+    public String getSubHeaderOne() {return subHeaderOne;}
+    public void setSubHeaderOne(String subHeaderOne) {this.subHeaderOne = subHeaderOne;}
 }

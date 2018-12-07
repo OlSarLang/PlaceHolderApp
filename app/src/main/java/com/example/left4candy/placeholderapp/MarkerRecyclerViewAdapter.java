@@ -42,8 +42,7 @@ public class MarkerRecyclerViewAdapter extends RecyclerView.Adapter<MarkerRecycl
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: called");
         holder.header.setText(markerItems.get(position).getHeader());
-        holder.subHeaderOne.setText(markerItems.get(position).getSubHeaderOne());
-        holder.subHeaderTwo.setText(markerItems.get(position).getSubHeaderTwo());
+        holder.subHeaderOne.setText(markerItems.get(position).getSubHeader());
     }
 
     @Override
@@ -54,14 +53,12 @@ public class MarkerRecyclerViewAdapter extends RecyclerView.Adapter<MarkerRecycl
     public class ViewHolder extends RecyclerView.ViewHolder{
         EditText header;
         EditText subHeaderOne;
-        EditText subHeaderTwo;
         RelativeLayout itemParentLayout;
 
         public ViewHolder(View itemView){
             super(itemView);
-            header = itemView.findViewById(R.id.editText0);
-            subHeaderOne = itemView.findViewById(R.id.editText1);
-            subHeaderTwo = itemView.findViewById(R.id.editText2);
+            header = itemView.findViewById(R.id.headertext);
+            subHeaderOne = itemView.findViewById(R.id.subheadertext);
         }
     }
 }

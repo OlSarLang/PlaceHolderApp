@@ -17,8 +17,10 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="false"
             android:layout_weight="0"
+            android:maxLines="1"
             android:text="TextView"
-            android:textSize="30sp" />
+            android:textSize="30sp"
+            android:textStyle="italic" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -57,7 +59,6 @@
                 android:scaleType="fitXY" />
 
             <ImageView
-                android:id="@+id/imageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
@@ -66,6 +67,27 @@
                 app:srcCompat="@drawable/circleframe" />
 
         </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/markerInfoHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:maxLines="1"
+                android:text="Info"
+                android:textAlignment="center"
+                android:textStyle="bold|italic" />
+
+        </LinearLayout>
 
         <ScrollView
             android:layout_width="match_parent"
@@ -90,6 +112,12 @@
 
             </LinearLayout>
         </ScrollView>
+
+        <Button
+            android:id="@+id/addFieldButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Field" />
 
         <LinearLayout
             android:layout_width="match_parent"
