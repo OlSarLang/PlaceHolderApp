@@ -1,9 +1,14 @@
 package com.example.left4candy.placeholderapp;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Handler;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -12,8 +17,11 @@ import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,16 +32,23 @@ import com.bumptech.glide.module.AppGlideModule;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 public class AccountFragment extends Fragment {
     private static final String TAG = "AccountFragment";
     String userUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-    String userName;
+    String userName = "Not Found";
 
     private int picId;
 
@@ -43,8 +58,12 @@ public class AccountFragment extends Fragment {
     private StorageReference profileImageRef;
     private StorageReference customImagesRef;
 
+    private DatabaseReference mDatabaseRef;
+    private DatabaseReference userNameRef;
+
     private StorageReference thisReference;
     private ImageView thisImage;
+    private Uri thisUri;
 
     private ImageView changeProfileImage;
     private TextView userTextView;
@@ -52,7 +71,11 @@ public class AccountFragment extends Fragment {
     private Button mSelectBackgroundImage;
     private Button mSelectCustomImages;
 
-    private ProgressDialog mProgressDialog;
+    private Uri profileUri;
+    private Uri backgroundUri;
+    private Uri imageUri;
+
+    private ProgressBar progressBar;
 
     private static final int GALLERY_INTENT = 2;
 
@@ -64,20 +87,66 @@ public class AccountFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         mStorage = FirebaseStorage.getInstance().getReference().child(userUid);
         FirebaseUser user = mAuth.getCurrentUser();
+
         backgroundImageRef = mStorage.child("images/background.jpg");
         profileImageRef = mStorage.child("images/profile.jpg");
         customImagesRef = mStorage.child("images/custom/");
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child(userUid);
+        userNameRef = FirebaseDatabase.getInstance().getReference().child(userUid + "/UserName");
+
+        userNameRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() != null){
+                    userName = dataSnapshot.getValue(String.class);
+                    userTextView.setText(userName);
+                    Toast.makeText(getContext(), "Username " + userName, Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
 
         changeProfileImage = view.findViewById(R.id.changeProfileImage);
 
-        userTextView = view.findViewById(R.id.changeableAccountName);
-        userTextView.setText(user.getDisplayName());
+        userTextView = view.findViewById(R.id.accountName);
+        userTextView.setText(userName);
+
+        userTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+
+                alert.setTitle("Change accountname");
+                alert.setMessage("Change name here yo");
+                final EditText input = new EditText(getContext());
+                alert.setView(input);
+
+                alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        userNameRef.setValue(input.getText().toString());
+                    }
+                });
+                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+                alert.show();
+            }
+        });
+
+        progressBar = view.findViewById(R.id.progressBar);
 
         buttonLogout = view.findViewById(R.id.logoutPlaceholder);
 
         loadProfile();
 
-        mProgressDialog = new ProgressDialog(getActivity());
 
         changeProfileImage.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -86,6 +155,7 @@ public class AccountFragment extends Fragment {
                 intent.setType("image/*");
                 thisReference = profileImageRef;
                 thisImage = changeProfileImage;
+                thisUri = profileUri;
                 startActivityForResult(intent, GALLERY_INTENT);
             }
         });
@@ -97,6 +167,7 @@ public class AccountFragment extends Fragment {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 thisReference = backgroundImageRef;
+                thisUri = backgroundUri;
                 //TODO Samma som nedanför
                 startActivityForResult(intent, GALLERY_INTENT);
             }
@@ -109,6 +180,7 @@ public class AccountFragment extends Fragment {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 thisReference = customImagesRef;
+                thisUri = imageUri;
                 //TODO Kolla om thisImage behövs, ev. felhantering
                 startActivityForResult(intent, GALLERY_INTENT);
             }
@@ -122,28 +194,64 @@ public class AccountFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == GALLERY_INTENT && resultCode == getActivity().RESULT_OK){
-            mProgressDialog.setMessage("Uploading...");
-            mProgressDialog.show();
-            Uri uri = data.getData();
+            thisUri = data.getData();
+            uploadFile();
+        }
+    }
 
-            thisReference.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(getContext(), "Upload Done", Toast.LENGTH_LONG).show();
-                    mProgressDialog.dismiss();
-                    if(thisImage == changeProfileImage) {
-                        loadImage(thisReference, thisImage);
-                        ((MainAdminActivity)getActivity()).loadProfile();
-                    }
-                    ((MainAdminActivity)getActivity()).changeOverviewBackground();
 
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+    private String getFileExtension(Uri uri){
+        ContentResolver cR = getContext().getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(cR.getType(uri));
+    }
 
-                }
-            });
+    private void uploadFile(){
+        if(thisUri != null){
+            StorageReference fileReference;
+            if(thisReference == profileImageRef) {
+                fileReference = thisReference;
+            }else if(thisReference == backgroundImageRef){
+                fileReference = thisReference;
+            }else{
+                fileReference = thisReference.child(System.currentTimeMillis() + "." + getFileExtension(thisUri));
+            }
+            fileReference.putFile(thisUri)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressBar.setProgress(0);
+                                }
+                            }, 500);
+
+                            Upload upload = new Upload(taskSnapshot.getUploadSessionUri().toString());
+                            String uploadId = mDatabaseRef.push().getKey();
+                            mDatabaseRef.child(uploadId).setValue(upload);
+                            loadProfile();
+                            ((MainAdminActivity)getActivity()).loadProfile();
+                            ((MainAdminActivity)getActivity()).changeOverviewBackground();
+
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0 * taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
+                            progressBar.setProgress((int) progress);
+                        }
+                    });
+        }else{
+
         }
     }
 

@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +34,11 @@ import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -51,11 +57,15 @@ public class OverviewFragment extends Fragment {
     private StorageReference mStorage;
     private StorageReference backgroundImageRef;
     private StorageReference customImagesRef;
+    private DatabaseReference mDatabase;
+    private DatabaseReference databaseMarkerRef;
+    private DatabaseReference databaseAmountRef;
 
     private ImageView backgroundImage;
     private ImageView positionBackground;
     private RelativeLayout myLayout;
 
+    private int amountMarkers;
     private List<CustomMarker> customMarkerList; //List over all loaded markers
     private Map<CustomMarker, ImageButton> pressableCustomMarkerList; //List of the markers shown, this is used to figure out which marker the user pressed and then gets that marker from customMarkerList
     private List<ImageButton> visibleCustomMarkerList; //The visible markers of the above mentioned list
@@ -64,6 +74,12 @@ public class OverviewFragment extends Fragment {
     private ImageButton imageCircle;
 
     private RecyclerView recyclerView;
+    private MarkerRecyclerViewAdapter recyclerViewAdapter;
+    private DatabaseReference iDatabaseRef;
+    private RecyclerView imageRecyclerView;
+    private ImagePickerAdapter iAdapter;
+    private List<Upload> iUploads;
+    private ProgressBar iProgressCircle;
 
     private Bitmap redMarker;
     private Bitmap greenMarker;
@@ -84,10 +100,32 @@ public class OverviewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.overview_fragment, container, false);
+        //FIREBASE USER INFO
         mAuth = FirebaseAuth.getInstance();
         mStorage = FirebaseStorage.getInstance().getReference().child(userUid);
+
+        //FIREBASE IMAGES
         backgroundImageRef = mStorage.child("images/background.jpg");
         customImagesRef = mStorage.child("images/custom/" + picId);
+
+        //FIREBASE MARKERS
+        mDatabase = FirebaseDatabase.getInstance().getReference().child(userUid);
+        databaseAmountRef = mDatabase.child("Amount of Markers");
+
+        databaseAmountRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() != null){
+                    amountMarkers = dataSnapshot.getValue(int.class);
+                    Toast.makeText(getContext(), "Amount of Markers: " + amountMarkers, Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         //TODO ondata change listener instead of loadimages
 
@@ -122,6 +160,8 @@ public class OverviewFragment extends Fragment {
         return view;
     }
 
+
+
     private void addTouchListener(){
 
         positionBackground.setOnTouchListener(new View.OnTouchListener() {
@@ -149,7 +189,7 @@ public class OverviewFragment extends Fragment {
         final int placeY = y;
 
         customMarker = new CustomMarker(placeX, placeY);
-        customMarker.setSolidColor(greenMarker);
+        customMarker.setSolidColor("green");
         //TODO set id etc
 
         customMarker.setMarkerName("Hope it works");
@@ -197,6 +237,10 @@ public class OverviewFragment extends Fragment {
                 Toast.makeText(getContext(), "Marker added", Toast.LENGTH_SHORT).show();
                 loadMarkers(customMarker);
                 //TODO save to database
+                databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
+                amountMarkers++;
+                databaseAmountRef.setValue(amountMarkers);
+                databaseMarkerRef.setValue(customMarker);
                 dialog.dismiss();
 
             }
@@ -215,7 +259,7 @@ public class OverviewFragment extends Fragment {
         );
 
         layoutParams.setMargins(visibleMarker.getxPos(), visibleMarker.getyPos(), 0, 0);
-        imageCircle.setImageBitmap(customMarker.getSolidColor());
+        imageCircle.setImageBitmap(greenMarker);
         imageCircle.setLayoutParams(layoutParams);
         myLayout.addView(imageCircle);
         visibleCustomMarkerList.add(imageCircle);
@@ -253,13 +297,27 @@ public class OverviewFragment extends Fragment {
         final AlertDialog dialog = aBuilder.create();
         Log.d("AlertDialog ", "has been created");
 
+        markerImage.setClickable(true);
+        markerImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(), "MarkerImage clicked", Toast.LENGTH_LONG).show();
+                openImagePicker();
+            }
+        });
+
         addFieldButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick (View view){
                 MarkerItem newMarkerItem = new MarkerItem();
-                customMarker.getMarkerItems().add(newMarkerItem);
-                dialog.dismiss();
-                showMarker(customMarker);
+                if(customMarker.getMarkerItems().size() > 5){
+                    //TODO Crash when 14th has been added
+                    Toast.makeText(getContext(), "Too many fields", Toast.LENGTH_LONG).show();
+                }
+                else{
+                    customMarker.getMarkerItems().add(newMarkerItem);
+                    recyclerViewAdapter.notifyItemInserted(customMarker.getMarkerItems().size()-1);
+                }
             }
         });
 
@@ -273,7 +331,7 @@ public class OverviewFragment extends Fragment {
         saveNewMarker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MarkerItem markerItem = new MarkerItem();
+                MarkerItem markerItem;
 
                 //TODO save to database
                 customMarker.setMarkerName(markerName.getText().toString());
@@ -286,6 +344,8 @@ public class OverviewFragment extends Fragment {
                     markerItem.setSubHeader(subHeaderOneText.getText().toString());
                     System.out.println("Amount of items: " + i);
                 }
+                databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
+                databaseMarkerRef.setValue(customMarker);
                 dialog.dismiss();
 
             }
@@ -305,12 +365,10 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onSuccess(Uri uri) {
                 Glide.with(OverviewFragment.this).load(uri).into(imgV);
-                Toast.makeText(getContext(), "Background Loaded", Toast.LENGTH_LONG).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Could not find background", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -328,10 +386,44 @@ public class OverviewFragment extends Fragment {
 
     private void initRecyclerView(View view, CustomMarker customMarker){
         recyclerView = view.findViewById(R.id.marker_recycler_view);
-        MarkerRecyclerViewAdapter recyclerViewAdapter = new MarkerRecyclerViewAdapter(customMarker.getMarkerItems(), getContext());
+        recyclerViewAdapter = new MarkerRecyclerViewAdapter(customMarker.getMarkerItems(), getContext());
         recyclerView.setAdapter(recyclerViewAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+    }
+
+    private void openImagePicker(){
+        final AlertDialog.Builder iBuilder = new AlertDialog.Builder(getContext());
+        View iView = getLayoutInflater().inflate(R.layout.marker_image_picker_fragment, null);
+        imageRecyclerView = iView.findViewById(R.id.image_recyclerview);
+        imageRecyclerView.setHasFixedSize(true);
+        imageRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        iProgressCircle = iView.findViewById(R.id.progressCircle);
+        iUploads = new ArrayList<Upload>();
+
+        iDatabaseRef = FirebaseDatabase.getInstance().getReference("uploads");
+        iDatabaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot postSnapshot : dataSnapshot.getChildren()){
+                    Upload upload = postSnapshot.getValue(Upload.class);
+                    iUploads.add(upload);
+                }
+
+                iAdapter = new ImagePickerAdapter(getContext(), iUploads);
+                imageRecyclerView.setAdapter(iAdapter);
+                iProgressCircle.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                iProgressCircle.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        iBuilder.setView(iView);
+        final AlertDialog imageDialog = iBuilder.create();
+        imageDialog.show();
     }
 
 }

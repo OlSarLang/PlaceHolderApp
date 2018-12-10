@@ -28,6 +28,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -36,6 +41,7 @@ import com.squareup.picasso.Picasso;
 public class MainAdminActivity extends AppCompatActivity implements View.OnClickListener {
 
     String userUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    String userName = "Not found";
 
     private OverviewFragment overviewFragment = new OverviewFragment();
     private AccountFragment accountFragment = new AccountFragment();
@@ -48,6 +54,7 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
     private FirebaseAuth mAuth;
     private StorageReference mStorage;
     private StorageReference profileImageRef;
+    private DatabaseReference userNameRef;
 
     private ImageView profileImage;
     private TextView userTextView;
@@ -72,7 +79,23 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
         profileImageRef = mStorage.child("images/profile.jpg");
         profileImage = findViewById(R.id.profileImage);
         userTextView = (TextView) findViewById(R.id.textViewUserEmail);
-        userTextView.setText(user.getEmail());
+        userTextView.setText(userName);
+
+        userNameRef = FirebaseDatabase.getInstance().getReference().child(userUid + "/UserName");
+
+        userNameRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() != null){
+                    userName = dataSnapshot.getValue(String.class);
+                    userTextView.setText(userName);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
 
         loadProfile();
 

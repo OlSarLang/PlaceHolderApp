@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CustomMarker {
 
@@ -13,8 +14,8 @@ public class CustomMarker {
     private String markerName;
     private int xPos;
     private int yPos;
-    private ImageView image;
-    private Bitmap solidColor;
+    private String imageId;
+    private String solidColor;
     private String header;
     private String subHeaderOne;
     private String subHeaderTwo;
@@ -22,7 +23,7 @@ public class CustomMarker {
 
     private MarkerItem markerItem;
 
-    private ArrayList<MarkerItem> markerItems = new ArrayList<>();
+    private List<MarkerItem> markerItems = new ArrayList<>();
     //TODO Fixa ett sätt att få referens från bilden jag valt för markören och spara den någonstans.
 
 
@@ -63,11 +64,11 @@ public class CustomMarker {
     public int getyPos() {return yPos;}
     public void setyPos(int yPos) {this.yPos = yPos;}
 
-    public ImageView getImage() {return image;}
-    public void setImage(ImageView image) {this.image = image;}
+    public String getImage() {return imageId;}
+    public void setImage(String imageId) {this.imageId = imageId;}
 
-    public Bitmap getSolidColor() {return solidColor;}
-    public void setSolidColor(Bitmap solidColor) {this.solidColor = solidColor;}
+    public String getSolidColor() {return solidColor;}
+    public void setSolidColor(String solidColor) {this.solidColor = solidColor;}
 
     public MarkerItem getMarkerItem() {
         return markerItem;
@@ -76,10 +77,10 @@ public class CustomMarker {
         this.markerItem = markerItem;
     }
 
-    public ArrayList<MarkerItem> getMarkerItems() {
+    public List<MarkerItem> getMarkerItems() {
         return markerItems;
     }
-    public void setMarkerItems(ArrayList<MarkerItem> markerItems) {
+    public void setMarkerItems(List<MarkerItem> markerItems) {
         this.markerItems = markerItems;
     }
 

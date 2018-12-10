@@ -21,10 +21,10 @@ public class MarkerRecyclerViewAdapter extends RecyclerView.Adapter<MarkerRecycl
 
     private static final String TAG = "MarkerRecyclerViewAdapt";
 
-    private ArrayList<MarkerItem> markerItems;
+    private List<MarkerItem> markerItems;
     private Context context;
 
-    public MarkerRecyclerViewAdapter(ArrayList<MarkerItem> markerItems, Context context) {
+    public MarkerRecyclerViewAdapter(List<MarkerItem> markerItems, Context context) {
         super();
         this.markerItems = markerItems;
         this.context = context;
