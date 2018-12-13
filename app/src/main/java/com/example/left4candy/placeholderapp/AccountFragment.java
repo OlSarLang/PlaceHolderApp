@@ -30,6 +30,8 @@ import com.bumptech.glide.Registry;
 import com.bumptech.glide.load.ResourceDecoder;
 import com.bumptech.glide.module.AppGlideModule;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -44,6 +46,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.net.URI;
+import java.net.URL;
 
 public class AccountFragment extends Fragment {
     private static final String TAG = "AccountFragment";
@@ -60,9 +65,13 @@ public class AccountFragment extends Fragment {
 
     private DatabaseReference mDatabaseRef;
     private DatabaseReference userNameRef;
+    private DatabaseReference imageDatabaseRef;
+
+    private UploadTask uploadTask;
 
     private StorageReference thisReference;
     private ImageView thisImage;
+    private String thisImageType;
     private Uri thisUri;
 
     private ImageView changeProfileImage;
@@ -70,10 +79,6 @@ public class AccountFragment extends Fragment {
     private Button buttonLogout;
     private Button mSelectBackgroundImage;
     private Button mSelectCustomImages;
-
-    private Uri profileUri;
-    private Uri backgroundUri;
-    private Uri imageUri;
 
     private ProgressBar progressBar;
 
@@ -93,6 +98,7 @@ public class AccountFragment extends Fragment {
         customImagesRef = mStorage.child("images/custom/");
         mDatabaseRef = FirebaseDatabase.getInstance().getReference().child(userUid);
         userNameRef = FirebaseDatabase.getInstance().getReference().child(userUid + "/UserName");
+        imageDatabaseRef = mDatabaseRef.child("/images");
 
         userNameRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -155,7 +161,7 @@ public class AccountFragment extends Fragment {
                 intent.setType("image/*");
                 thisReference = profileImageRef;
                 thisImage = changeProfileImage;
-                thisUri = profileUri;
+                thisImageType = "profile";
                 startActivityForResult(intent, GALLERY_INTENT);
             }
         });
@@ -167,7 +173,7 @@ public class AccountFragment extends Fragment {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 thisReference = backgroundImageRef;
-                thisUri = backgroundUri;
+                thisImageType = "background";
                 //TODO Samma som nedanför
                 startActivityForResult(intent, GALLERY_INTENT);
             }
@@ -180,7 +186,7 @@ public class AccountFragment extends Fragment {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 thisReference = customImagesRef;
-                thisUri = imageUri;
+                thisImageType = "custom";
                 //TODO Kolla om thisImage behövs, ev. felhantering
                 startActivityForResult(intent, GALLERY_INTENT);
             }
@@ -207,8 +213,7 @@ public class AccountFragment extends Fragment {
     }
 
     private void uploadFile(){
-        if(thisUri != null){
-            StorageReference fileReference;
+            final StorageReference fileReference;
             if(thisReference == profileImageRef) {
                 fileReference = thisReference;
             }else if(thisReference == backgroundImageRef){
@@ -216,43 +221,38 @@ public class AccountFragment extends Fragment {
             }else{
                 fileReference = thisReference.child(System.currentTimeMillis() + "." + getFileExtension(thisUri));
             }
-            fileReference.putFile(thisUri)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            Handler handler = new Handler();
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    progressBar.setProgress(0);
-                                }
-                            }, 500);
 
-                            Upload upload = new Upload(taskSnapshot.getUploadSessionUri().toString());
-                            String uploadId = mDatabaseRef.push().getKey();
-                            mDatabaseRef.child(uploadId).setValue(upload);
+            uploadTask = fileReference.putFile(thisUri);
+                    Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                            if (!task.isSuccessful()) {
+                                throw task.getException();
+                            }
+                            return fileReference.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            Uri downloadUri = task.getResult();
+                            String thisUri = downloadUri.toString();
+                            Upload upload = new Upload(thisUri.toString());
+                            String uploadId = imageDatabaseRef.push().getKey();
+                            if(thisImageType == "profile" || thisImageType == "background"){
+                                imageDatabaseRef.child(thisImageType +"/").setValue(upload);
+                            }else{
+                                imageDatabaseRef.child(thisImageType +"/" +  uploadId).setValue(upload);
+                            }
                             loadProfile();
                             ((MainAdminActivity)getActivity()).loadProfile();
                             ((MainAdminActivity)getActivity()).changeOverviewBackground();
-
                         }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
+                    }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
 
                         }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0 * taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
-                            progressBar.setProgress((int) progress);
-                        }
                     });
-        }else{
-
-        }
     }
 
     public void onClick(View v) {

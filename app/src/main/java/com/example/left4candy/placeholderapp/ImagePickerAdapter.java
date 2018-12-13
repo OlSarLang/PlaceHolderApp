@@ -3,6 +3,7 @@ package com.example.left4candy.placeholderapp;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,11 +29,12 @@ public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.
         return new ImageViewHolder(v);
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
         Upload uploadCurrent = mUploads.get(position);
         Picasso.get()
-                .load(uploadCurrent.getmImageUrl())
+                .load(uploadCurrent.getMImageUrl())
                 .placeholder(R.mipmap.ic_launcher)
                 .fit()
                 .centerCrop()
@@ -44,6 +46,7 @@ public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.
         return mUploads.size();
     }
 
+
     public class ImageViewHolder extends RecyclerView.ViewHolder{
         public ImageView imageView;
 
@@ -51,7 +54,14 @@ public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.
             super(itemView);
 
             imageView = itemView.findViewById(R.id.image_upload);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mUploads.get(getLayoutPosition()).getMImageUrl();
+                    Log.d("Hello", mUploads.get(getLayoutPosition()).getMImageUrl());
+
+                }
+            });
         }
     }
-
 }

@@ -14,7 +14,7 @@ public class CustomMarker {
     private String markerName;
     private int xPos;
     private int yPos;
-    private String imageId;
+    private String imageUrl;
     private String solidColor;
     private String header;
     private String subHeaderOne;
@@ -64,8 +64,8 @@ public class CustomMarker {
     public int getyPos() {return yPos;}
     public void setyPos(int yPos) {this.yPos = yPos;}
 
-    public String getImage() {return imageId;}
-    public void setImage(String imageId) {this.imageId = imageId;}
+    public String getImageUrl() {return imageUrl;}
+    public void setImageUrl(String imageUrl) {this.imageUrl = imageUrl;}
 
     public String getSolidColor() {return solidColor;}
     public void setSolidColor(String solidColor) {this.solidColor = solidColor;}

@@ -9,14 +9,14 @@ public class Upload {
     }
 
     public Upload(String mImageUrl){
-        mImageUrl = mImageUrl;
+        this.mImageUrl = mImageUrl;
     }
 
-    public String getmImageUrl() {
+    public String getMImageUrl() {
         return mImageUrl;
     }
 
-    public void setmImageUrl(String mImageUrl) {
+    public void setMImageUrl(String mImageUrl) {
         this.mImageUrl = mImageUrl;
     }
 }

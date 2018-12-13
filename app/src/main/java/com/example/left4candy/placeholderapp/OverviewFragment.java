@@ -110,6 +110,7 @@ public class OverviewFragment extends Fragment {
 
         //FIREBASE MARKERS
         mDatabase = FirebaseDatabase.getInstance().getReference().child(userUid);
+        iDatabaseRef = mDatabase.child("images/custom/");
         databaseAmountRef = mDatabase.child("Amount of Markers");
 
         databaseAmountRef.addValueEventListener(new ValueEventListener() {
@@ -248,7 +249,7 @@ public class OverviewFragment extends Fragment {
         dialog.show();
     }
 
-    public void loadMarkers(CustomMarker customMarker){
+    public void loadMarkers(CustomMarker customMarker){ //TODO Load customMarkerList
         visibleMarker = new VisibleMarker(customMarker.getMarkerId(), customMarker.getxPos(), customMarker.getyPos());
 
         imageCircle = new ImageButton(getActivity());
@@ -302,7 +303,7 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getContext(), "MarkerImage clicked", Toast.LENGTH_LONG).show();
-                openImagePicker();
+                openImagePicker(markerImage);
             }
         });
 
@@ -392,7 +393,7 @@ public class OverviewFragment extends Fragment {
 
     }
 
-    private void openImagePicker(){
+    private void openImagePicker(final ImageView imageView){
         final AlertDialog.Builder iBuilder = new AlertDialog.Builder(getContext());
         View iView = getLayoutInflater().inflate(R.layout.marker_image_picker_fragment, null);
         imageRecyclerView = iView.findViewById(R.id.image_recyclerview);
@@ -401,17 +402,36 @@ public class OverviewFragment extends Fragment {
         iProgressCircle = iView.findViewById(R.id.progressCircle);
         iUploads = new ArrayList<Upload>();
 
-        iDatabaseRef = FirebaseDatabase.getInstance().getReference("uploads");
         iDatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot postSnapshot : dataSnapshot.getChildren()){
                     Upload upload = postSnapshot.getValue(Upload.class);
                     iUploads.add(upload);
+                    Log.d("upload", upload.getMImageUrl());
                 }
 
                 iAdapter = new ImagePickerAdapter(getContext(), iUploads);
                 imageRecyclerView.setAdapter(iAdapter);
+                imageRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+                    @Override
+                    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                        return false;
+                    }
+
+                    @Override
+                    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+                        customMarker.setImageUrl(iUploads.get(imageRecyclerView.getChildAdapterPosition(rv)).getMImageUrl());
+                        Uri imgUri = Uri.parse(customMarker.getImageUrl());
+                        imageView.setImageURI(imgUri);
+                        Log.d(" Image clicked", customMarker.getImageUrl());
+                    }
+
+                    @Override
+                    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+                    }
+                });
                 iProgressCircle.setVisibility(View.INVISIBLE);
             }
 
