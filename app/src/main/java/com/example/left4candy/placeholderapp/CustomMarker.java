@@ -15,11 +15,9 @@ public class CustomMarker {
     private int xPos;
     private int yPos;
     private String imageUrl;
-    private String solidColor;
+    private boolean red, green, yellow, blue;
     private String header;
     private String subHeaderOne;
-    private String subHeaderTwo;
-
 
     private MarkerItem markerItem;
 
@@ -28,21 +26,22 @@ public class CustomMarker {
 
 
     public CustomMarker(int xPos, int yPos){
-        this(0000, "placeholder", xPos, yPos, "yellow");
+        this(0000, "placeholder", xPos, yPos, true);
         markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
     }
 
     public CustomMarker(int markerId, int xPos, int yPos){
-        this(markerId, "name", xPos, yPos, "yellow");
+        this(markerId, "name", xPos, yPos, true);
         markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
     }
 
-    public CustomMarker(int markerId, String markerName, int xPos, int yPos, String solidColor){
+    public CustomMarker(int markerId, String markerName, int xPos, int yPos, boolean red){
         markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
         id++;
+        this.red = red;
         this.markerId = id;
         this.markerName = markerName;
         this.xPos = xPos;
@@ -67,9 +66,6 @@ public class CustomMarker {
     public String getImageUrl() {return imageUrl;}
     public void setImageUrl(String imageUrl) {this.imageUrl = imageUrl;}
 
-    public String getSolidColor() {return solidColor;}
-    public void setSolidColor(String solidColor) {this.solidColor = solidColor;}
-
     public MarkerItem getMarkerItem() {
         return markerItem;
     }
@@ -89,4 +85,16 @@ public class CustomMarker {
 
     public String getSubHeaderOne() {return subHeaderOne;}
     public void setSubHeaderOne(String subHeaderOne) {this.subHeaderOne = subHeaderOne;}
+
+    public boolean isRed() {return red; }
+    public void setRed(boolean red) {this.red = red; }
+
+    public boolean isGreen() {return green; }
+    public void setGreen(boolean green) {this.green = green;}
+
+    public boolean isYellow() {return yellow;}
+    public void setYellow(boolean yellow) {this.yellow = yellow;}
+
+    public boolean isBlue() {return blue;}
+    public void setBlue(boolean blue) {this.blue = blue; }
 }

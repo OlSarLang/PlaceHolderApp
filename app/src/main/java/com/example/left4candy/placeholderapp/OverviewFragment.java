@@ -2,8 +2,10 @@ package com.example.left4candy.placeholderapp;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -41,6 +43,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,7 +89,7 @@ public class OverviewFragment extends Fragment {
     private Bitmap greenMarker;
     private Bitmap blueMarker;
     private Bitmap yellowMarker;
-    private Bitmap whiteMarker;
+    private Bitmap mapMap;
 
     private String newMarkerId;
     private String oldMarkerId;
@@ -112,7 +116,19 @@ public class OverviewFragment extends Fragment {
         mDatabase = FirebaseDatabase.getInstance().getReference().child(userUid);
         iDatabaseRef = mDatabase.child("images/custom/");
         databaseAmountRef = mDatabase.child("Amount of Markers");
+        databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
 
+        databaseMarkerRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                getDatabase(dataSnapshot);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
         databaseAmountRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -134,22 +150,17 @@ public class OverviewFragment extends Fragment {
         BitmapDrawable bitmapGreen = (BitmapDrawable)getResources().getDrawable(R.drawable.colorgreen);
         BitmapDrawable bitmapBlue = (BitmapDrawable)getResources().getDrawable(R.drawable.colorblue);
         BitmapDrawable bitmapYellow = (BitmapDrawable)getResources().getDrawable(R.drawable.coloryellow);
-        BitmapDrawable bitmapWhite = (BitmapDrawable)getResources().getDrawable(R.drawable.colorwhite);
         Bitmap red = bitmapRed.getBitmap();
         Bitmap green = bitmapGreen.getBitmap();
         Bitmap blue = bitmapBlue.getBitmap();
         Bitmap yellow = bitmapYellow.getBitmap();
-        Bitmap white = bitmapWhite.getBitmap();
         redMarker = Bitmap.createScaledBitmap(red, width, height, false);
         greenMarker = Bitmap.createScaledBitmap(green, width, height, false);
         blueMarker = Bitmap.createScaledBitmap(blue, width, height, false);
         yellowMarker = Bitmap.createScaledBitmap(yellow, width, height, false);
-        whiteMarker = Bitmap.createScaledBitmap(white, width, height, false);
 
         customMarkerList = new ArrayList<>();
         visibleCustomMarkerList = new ArrayList<>();
-
-
 
         myLayout = view.findViewById(R.id.rl_container);
         backgroundImage = view.findViewById(R.id.overviewBackground);
@@ -157,11 +168,16 @@ public class OverviewFragment extends Fragment {
         loadProfile();
         addTouchListener();
 
-
         return view;
     }
 
-
+    public void getDatabase(DataSnapshot dataSnapshot){
+        for(DataSnapshot ds : dataSnapshot.getChildren()){
+            CustomMarker cmMarker = ds.getValue(CustomMarker.class);
+            customMarkerList.add(cmMarker);
+            loadMarker(cmMarker);
+        }
+    }
 
     private void addTouchListener(){
 
@@ -181,8 +197,6 @@ public class OverviewFragment extends Fragment {
         });
 
         //TODO OnTouch for the visibleMarkerList()
-
-
     }
 
     public void createMarker(int x, int y){
@@ -190,7 +204,7 @@ public class OverviewFragment extends Fragment {
         final int placeY = y;
 
         customMarker = new CustomMarker(placeX, placeY);
-        customMarker.setSolidColor("green");
+        customMarker.setRed(true);
         //TODO set id etc
 
         customMarker.setMarkerName("Hope it works");
@@ -236,7 +250,7 @@ public class OverviewFragment extends Fragment {
                 }
 
                 Toast.makeText(getContext(), "Marker added", Toast.LENGTH_SHORT).show();
-                loadMarkers(customMarker);
+                //loadMarker(customMarker);
                 //TODO save to database
                 databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
                 amountMarkers++;
@@ -249,7 +263,7 @@ public class OverviewFragment extends Fragment {
         dialog.show();
     }
 
-    public void loadMarkers(CustomMarker customMarker){ //TODO Load customMarkerList
+    public void loadMarker(CustomMarker customMarker){ //TODO Load customMarkerList
         visibleMarker = new VisibleMarker(customMarker.getMarkerId(), customMarker.getxPos(), customMarker.getyPos());
 
         imageCircle = new ImageButton(getActivity());
@@ -260,7 +274,7 @@ public class OverviewFragment extends Fragment {
         );
 
         layoutParams.setMargins(visibleMarker.getxPos(), visibleMarker.getyPos(), 0, 0);
-        imageCircle.setImageBitmap(greenMarker);
+        checkImageOrColor(customMarker, imageCircle, "MapMarker");
         imageCircle.setLayoutParams(layoutParams);
         myLayout.addView(imageCircle);
         visibleCustomMarkerList.add(imageCircle);
@@ -278,8 +292,6 @@ public class OverviewFragment extends Fragment {
     }
 
     public void showMarker(final CustomMarker customMarker){
-        customMarker.getSolidColor();
-
         final AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
         View mView = getLayoutInflater().inflate(R.layout.custom_marker_info, null);
         //TODO Fields to give names, color, image etc should be declared here
@@ -288,7 +300,7 @@ public class OverviewFragment extends Fragment {
         Button addFieldButton = mView.findViewById(R.id.addFieldButton);
         //TODO Fix so that you can choose colors/images
         final ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
-        markerImage.setImageResource(R.drawable.colorgreen);
+        checkImageOrColor(customMarker, markerImage, "IconMarker");
         TextView markerId = mView.findViewById(R.id.markerId);
         final EditText markerName = mView.findViewById(R.id.markerName);
         markerName.setText(customMarker.getMarkerName());
@@ -347,6 +359,7 @@ public class OverviewFragment extends Fragment {
                 }
                 databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
                 databaseMarkerRef.setValue(customMarker);
+                //loadMarker(customMarker);
                 dialog.dismiss();
 
             }
@@ -393,6 +406,81 @@ public class OverviewFragment extends Fragment {
 
     }
 
+
+    private void checkImageOrColor(CustomMarker customMarker, final ImageView imageView, String type){
+        boolean isMapMarker = false;
+
+        if(type == "MapMarker"){
+            isMapMarker = true;
+        }else if(type == "IconMarker"){
+            isMapMarker = false;
+        }
+        boolean isColor = false, isImage = false;
+
+        if(customMarker.isRed() == true){
+            if(isMapMarker){
+                imageView.setImageBitmap(redMarker);
+            }else {
+                imageView.setImageResource(R.drawable.colorred);
+            }
+            isColor = true;
+
+        }else if(customMarker.isGreen() == true){
+            if(isMapMarker){
+                imageView.setImageBitmap(greenMarker);
+            }else{
+                imageView.setImageResource(R.drawable.colorgreen);
+            }
+            isColor = true;
+
+        }else if(customMarker.isBlue() == true){
+            if(isMapMarker){
+                imageView.setImageBitmap(blueMarker);
+            }else{
+                imageView.setImageResource(R.drawable.colorblue);
+            }
+            isColor = true;
+
+        }else if(customMarker.isYellow() == true){
+            if(isMapMarker){
+                imageView.setImageBitmap(yellowMarker);
+            }else{
+                imageView.setImageResource(R.drawable.coloryellow);
+            }
+            isColor = true;
+        }
+
+        if(type == "MapMarker" && customMarker.isRed() == false && customMarker.isGreen() == false && customMarker.isBlue() == false && customMarker.isYellow() == false){
+            isImage = true;
+            Picasso.get()
+                    .load(customMarker.getImageUrl())
+                    .into(new Target() {
+                        @Override
+                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                            mapMap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+                            imageView.setImageBitmap(mapMap);
+                        }
+                        @Override
+                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                        }
+                        @Override
+                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+                        }
+                    });
+        }
+
+        if(type == "IconMarker" && customMarker.isRed() == false && customMarker.isGreen() == false && customMarker.isBlue() == false && customMarker.isYellow() == false){
+            isImage = true;
+            Picasso.get()
+                    .load(customMarker.getImageUrl())
+                    .fit()
+                    .centerCrop()
+                    .into(imageView);
+        }
+
+
+    }
+
     private void openImagePicker(final ImageView imageView){
         final AlertDialog.Builder iBuilder = new AlertDialog.Builder(getContext());
         View iView = getLayoutInflater().inflate(R.layout.marker_image_picker_fragment, null);
@@ -401,6 +489,7 @@ public class OverviewFragment extends Fragment {
         imageRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         iProgressCircle = iView.findViewById(R.id.progressCircle);
         iUploads = new ArrayList<Upload>();
+        final boolean[] pictureChosen = new boolean[1];
 
         iDatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -413,28 +502,26 @@ public class OverviewFragment extends Fragment {
 
                 iAdapter = new ImagePickerAdapter(getContext(), iUploads);
                 imageRecyclerView.setAdapter(iAdapter);
-                imageRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-                    @Override
-                    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                        return false;
-                    }
+                iProgressCircle.setVisibility(View.INVISIBLE);
 
+                iAdapter.setOnImageClickListener(new ImagePickerAdapter.onRecyclerViewItemClickListener() {
                     @Override
-                    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-                        customMarker.setImageUrl(iUploads.get(imageRecyclerView.getChildAdapterPosition(rv)).getMImageUrl());
+                    public void onItemClickListener(View view, int position) {
+                        customMarker.setImageUrl(iUploads.get(position).getMImageUrl());
+                        customMarker.setRed(false);
+                        customMarker.setGreen(false);
+                        customMarker.setBlue(false);
+                        customMarker.setYellow(false);
+                        pictureChosen[0] = true;
                         Uri imgUri = Uri.parse(customMarker.getImageUrl());
-                        imageView.setImageURI(imgUri);
-                        Log.d(" Image clicked", customMarker.getImageUrl());
-                    }
-
-                    @Override
-                    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
+                        Picasso.get()
+                                .load(customMarker.getImageUrl())
+                                .fit()
+                                .centerCrop()
+                                .into(imageView);
                     }
                 });
-                iProgressCircle.setVisibility(View.INVISIBLE);
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 iProgressCircle.setVisibility(View.INVISIBLE);
@@ -444,6 +531,9 @@ public class OverviewFragment extends Fragment {
         iBuilder.setView(iView);
         final AlertDialog imageDialog = iBuilder.create();
         imageDialog.show();
-    }
 
+        if(pictureChosen[0] == true){
+            imageDialog.dismiss();
+        }
+    }
 }

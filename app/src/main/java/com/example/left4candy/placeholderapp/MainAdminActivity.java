@@ -33,6 +33,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -80,6 +81,8 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
         profileImage = findViewById(R.id.profileImage);
         userTextView = (TextView) findViewById(R.id.textViewUserEmail);
         userTextView.setText(userName);
+
+        String registrationToken = FirebaseInstanceId.getInstance().getToken();
 
         userNameRef = FirebaseDatabase.getInstance().getReference().child(userUid + "/UserName");
 

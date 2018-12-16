@@ -57,11 +57,20 @@ public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mUploads.get(getLayoutPosition()).getMImageUrl();
-                    Log.d("Hello", mUploads.get(getLayoutPosition()).getMImageUrl());
-
+                    if(mItemClickListener != null){
+                        mItemClickListener.onItemClickListener(v, getAdapterPosition());
+                    }
                 }
             });
         }
+    }
+
+    private onRecyclerViewItemClickListener mItemClickListener;
+    public void setOnImageClickListener(onRecyclerViewItemClickListener mItemClickListener){
+        this.mItemClickListener = mItemClickListener;
+    }
+
+    public interface onRecyclerViewItemClickListener{
+        void onItemClickListener(View view, int position);
     }
 }
