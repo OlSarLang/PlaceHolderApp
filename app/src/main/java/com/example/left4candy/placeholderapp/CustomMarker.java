@@ -24,6 +24,9 @@ public class CustomMarker {
     private List<MarkerItem> markerItems = new ArrayList<>();
     //TODO Fixa ett sätt att få referens från bilden jag valt för markören och spara den någonstans.
 
+    public CustomMarker(){
+
+    }
 
     public CustomMarker(int xPos, int yPos){
         this(0000, "placeholder", xPos, yPos, true);

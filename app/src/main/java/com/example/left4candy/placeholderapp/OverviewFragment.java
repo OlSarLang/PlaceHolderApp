@@ -71,9 +71,9 @@ public class OverviewFragment extends Fragment {
 
     private int amountMarkers;
     private List<CustomMarker> customMarkerList; //List over all loaded markers
+    private CustomMarker customMarker;
     private Map<CustomMarker, ImageButton> pressableCustomMarkerList; //List of the markers shown, this is used to figure out which marker the user pressed and then gets that marker from customMarkerList
     private List<ImageButton> visibleCustomMarkerList; //The visible markers of the above mentioned list
-    private CustomMarker customMarker;
     private VisibleMarker visibleMarker;
     private ImageButton imageCircle;
 
@@ -116,11 +116,12 @@ public class OverviewFragment extends Fragment {
         mDatabase = FirebaseDatabase.getInstance().getReference().child(userUid);
         iDatabaseRef = mDatabase.child("images/custom/");
         databaseAmountRef = mDatabase.child("Amount of Markers");
-        databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
+        databaseMarkerRef = mDatabase.child("markers/");
 
         databaseMarkerRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.d("onDataChange()", "reached");
                 getDatabase(dataSnapshot);
             }
 
@@ -172,8 +173,11 @@ public class OverviewFragment extends Fragment {
     }
 
     public void getDatabase(DataSnapshot dataSnapshot){
+        Log.d("getDatabase()", "reached");
         for(DataSnapshot ds : dataSnapshot.getChildren()){
-            CustomMarker cmMarker = ds.getValue(CustomMarker.class);
+            CustomMarker cmMarker = new CustomMarker();
+            cmMarker = ds.getValue(CustomMarker.class);
+            CustomMarker.setId(cmMarker.getMarkerId());
             customMarkerList.add(cmMarker);
             loadMarker(cmMarker);
         }
@@ -202,6 +206,7 @@ public class OverviewFragment extends Fragment {
     public void createMarker(int x, int y){
         final int placeX = x;
         final int placeY = y;
+
 
         customMarker = new CustomMarker(placeX, placeY);
         customMarker.setRed(true);
@@ -235,6 +240,7 @@ public class OverviewFragment extends Fragment {
         cancelNewMarker.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick (View view){
+                CustomMarker.setId(CustomMarker.getId()-1);
                 dialog.dismiss();
             }
         });
@@ -243,7 +249,6 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 customMarker.setMarkerName(markerName.getText().toString());
-                customMarkerList.add(customMarker);
 
                 for(int i = 0; i < customMarker.getMarkerItems().size(); i++){
                     System.out.println("Amount of items: " + i);
@@ -263,7 +268,7 @@ public class OverviewFragment extends Fragment {
         dialog.show();
     }
 
-    public void loadMarker(CustomMarker customMarker){ //TODO Load customMarkerList
+    public void loadMarker(final CustomMarker customMarker){ //TODO Load customMarkerList
         visibleMarker = new VisibleMarker(customMarker.getMarkerId(), customMarker.getxPos(), customMarker.getyPos());
 
         imageCircle = new ImageButton(getActivity());
@@ -302,6 +307,7 @@ public class OverviewFragment extends Fragment {
         final ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
         checkImageOrColor(customMarker, markerImage, "IconMarker");
         TextView markerId = mView.findViewById(R.id.markerId);
+        markerId.setText(Integer.toString(customMarker.getMarkerId()));
         final EditText markerName = mView.findViewById(R.id.markerName);
         markerName.setText(customMarker.getMarkerName());
 
@@ -315,7 +321,7 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getContext(), "MarkerImage clicked", Toast.LENGTH_LONG).show();
-                openImagePicker(markerImage);
+                openImagePicker(markerImage, customMarker);
             }
         });
 
@@ -481,7 +487,7 @@ public class OverviewFragment extends Fragment {
 
     }
 
-    private void openImagePicker(final ImageView imageView){
+    private void openImagePicker(final ImageView imageView, final CustomMarker customMarker){
         final AlertDialog.Builder iBuilder = new AlertDialog.Builder(getContext());
         View iView = getLayoutInflater().inflate(R.layout.marker_image_picker_fragment, null);
         imageRecyclerView = iView.findViewById(R.id.image_recyclerview);
@@ -489,8 +495,11 @@ public class OverviewFragment extends Fragment {
         imageRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         iProgressCircle = iView.findViewById(R.id.progressCircle);
         iUploads = new ArrayList<Upload>();
-        final boolean[] pictureChosen = new boolean[1];
+        final boolean[] dismissed = {false};
 
+
+        iBuilder.setView(iView);
+        final AlertDialog imageDialog = iBuilder.create();
         iDatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -499,7 +508,6 @@ public class OverviewFragment extends Fragment {
                     iUploads.add(upload);
                     Log.d("upload", upload.getMImageUrl());
                 }
-
                 iAdapter = new ImagePickerAdapter(getContext(), iUploads);
                 imageRecyclerView.setAdapter(iAdapter);
                 iProgressCircle.setVisibility(View.INVISIBLE);
@@ -512,28 +520,26 @@ public class OverviewFragment extends Fragment {
                         customMarker.setGreen(false);
                         customMarker.setBlue(false);
                         customMarker.setYellow(false);
-                        pictureChosen[0] = true;
+                        dismissed[0] = true;
                         Uri imgUri = Uri.parse(customMarker.getImageUrl());
                         Picasso.get()
                                 .load(customMarker.getImageUrl())
                                 .fit()
                                 .centerCrop()
                                 .into(imageView);
+                        imageDialog.dismiss();
                     }
                 });
+
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 iProgressCircle.setVisibility(View.INVISIBLE);
             }
         });
-
-        iBuilder.setView(iView);
-        final AlertDialog imageDialog = iBuilder.create();
         imageDialog.show();
 
-        if(pictureChosen[0] == true){
-            imageDialog.dismiss();
-        }
+
+
     }
 }
