@@ -68,6 +68,72 @@
 
         </FrameLayout>
 
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioRed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0" />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:layout_marginRight="15dp"
+                app:srcCompat="@drawable/colorred" />
+
+            <RadioButton
+                android:id="@+id/radioGreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0" />
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:layout_marginRight="15dp"
+                android:layout_weight="0"
+                app:srcCompat="@drawable/colorgreen" />
+
+            <RadioButton
+                android:id="@+id/radioBlue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0" />
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:layout_marginRight="15dp"
+                android:layout_weight="0"
+                app:srcCompat="@drawable/colorblue" />
+
+            <RadioButton
+                android:id="@+id/radioYellow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0" />
+
+            <ImageView
+                android:id="@+id/imageView4"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:layout_weight="0"
+                app:srcCompat="@drawable/coloryellow" />
+        </RadioGroup>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

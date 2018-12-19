@@ -12,9 +12,10 @@ public class CustomMarker {
     private static int id = 0;
     private int markerId = 1;
     private String markerName;
-    private int xPos;
-    private int yPos;
+    private float xPos;
+    private float yPos;
     private String imageUrl;
+    private boolean isSolid;
     private boolean red, green, yellow, blue;
     private String header;
     private String subHeaderOne;
@@ -28,19 +29,19 @@ public class CustomMarker {
 
     }
 
-    public CustomMarker(int xPos, int yPos){
+    public CustomMarker(float xPos, float yPos){
         this(0000, "placeholder", xPos, yPos, true);
         markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
     }
 
-    public CustomMarker(int markerId, int xPos, int yPos){
+    public CustomMarker(int markerId, float xPos, float yPos){
         this(markerId, "name", xPos, yPos, true);
         markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
     }
 
-    public CustomMarker(int markerId, String markerName, int xPos, int yPos, boolean red){
+    public CustomMarker(int markerId, String markerName, float xPos, float yPos, boolean red){
         markerItem = new MarkerItem("header", "subHeader");
         markerItems.add(markerItem);
         id++;
@@ -60,11 +61,11 @@ public class CustomMarker {
     public String getMarkerName() {return markerName;}
     public void setMarkerName(String markerName) {this.markerName = markerName;}
 
-    public int getxPos() {return xPos;}
-    public void setxPos(int xPos) {this.xPos = xPos;}
+    public float getxPos() {return xPos;}
+    public void setxPos(float xPos) {this.xPos = xPos;}
 
-    public int getyPos() {return yPos;}
-    public void setyPos(int yPos) {this.yPos = yPos;}
+    public float getyPos() {return yPos;}
+    public void setyPos(float yPos) {this.yPos = yPos;}
 
     public String getImageUrl() {return imageUrl;}
     public void setImageUrl(String imageUrl) {this.imageUrl = imageUrl;}
@@ -100,4 +101,7 @@ public class CustomMarker {
 
     public boolean isBlue() {return blue;}
     public void setBlue(boolean blue) {this.blue = blue; }
+
+    public boolean isSolid() { return isSolid; }
+    public void setSolid(boolean solid) { isSolid = solid; }
 }
