@@ -1,6 +1,7 @@
 package com.example.left4candy.placeholderapp;
 
 import android.graphics.Bitmap;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 public class VisibleMarker {
@@ -11,7 +12,7 @@ public class VisibleMarker {
     private float yPos;
     private ImageView image;
     private Bitmap solidColor;
-    //TODO Fixa ett sätt att få referens från bilden jag valt för markören och spara den någonstans.
+    private ImageButton imageCircle;
 
     public VisibleMarker(int markerId, float xPos, float yPos){
         this.markerId = markerId;
@@ -34,4 +35,12 @@ public class VisibleMarker {
 
     public Bitmap getSolidColor() {return solidColor;}
     public void setSolidColor(Bitmap solidColor) {this.solidColor = solidColor;}
+
+    public ImageButton getImageCircle() {
+        return imageCircle;
+    }
+
+    public void setImageCircle(ImageButton imageCircle) {
+        this.imageCircle = imageCircle;
+    }
 }

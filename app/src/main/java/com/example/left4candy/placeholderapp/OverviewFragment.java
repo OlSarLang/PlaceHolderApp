@@ -3,7 +3,9 @@ package com.example.left4candy.placeholderapp;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -20,6 +22,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -36,6 +40,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.Registry;
 import com.bumptech.glide.load.ResourceDecoder;
 import com.bumptech.glide.module.AppGlideModule;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -69,8 +76,6 @@ public class OverviewFragment extends Fragment {
     private DatabaseReference mDatabase;
     private DatabaseReference databaseMarkerRef;
 
-    private ImageView backgroundImage;
-    private ImageView positionBackground;
     private FrameLayout myLayout;
 
     private List<CustomMarker> customMarkerList; //List over all loaded markers
@@ -135,6 +140,7 @@ public class OverviewFragment extends Fragment {
         });
 
 
+
         //TODO ondata change listener instead of loadimages
 
         BitmapDrawable bitmapRed = (BitmapDrawable)getResources().getDrawable(R.drawable.colorred);
@@ -154,8 +160,6 @@ public class OverviewFragment extends Fragment {
         visibleCustomMarkerList = new ArrayList<>();
 
         myLayout = view.findViewById(R.id.rl_container);
-        backgroundImage = view.findViewById(R.id.overviewBackground);
-        positionBackground = view.findViewById(R.id.positionBackground);
         loadProfile();
         addTouchListener();
 
@@ -164,6 +168,9 @@ public class OverviewFragment extends Fragment {
 
     public void getDatabase(DataSnapshot dataSnapshot){
         Log.d("getDatabase()", "reached");
+        myLayout.removeAllViewsInLayout();
+        customMarkerList.clear();
+        visibleCustomMarkerList.clear();
         for(DataSnapshot ds : dataSnapshot.getChildren()){
             CustomMarker cmMarker = new CustomMarker();
             cmMarker = ds.getValue(CustomMarker.class);
@@ -175,7 +182,7 @@ public class OverviewFragment extends Fragment {
 
     private void addTouchListener(){
 
-        positionBackground.setOnTouchListener(new View.OnTouchListener() {
+        myLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
@@ -190,7 +197,6 @@ public class OverviewFragment extends Fragment {
             }
         });
 
-        //TODO OnTouch for the visibleMarkerList()
     }
 
     public void createMarker(float x, float y){
@@ -200,17 +206,15 @@ public class OverviewFragment extends Fragment {
 
         customMarker = new CustomMarker(placeX, placeY);
         customMarker.setRed(true);
-        //TODO set id etc
 
         customMarker.setMarkerName("Hope it works");
 
         final AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
         View mView = getLayoutInflater().inflate(R.layout.custom_marker_info, null);
-        //TODO Fields to give names, color, image etc should be declared here
         Button saveNewMarker = mView.findViewById(R.id.saveButton);
         Button cancelNewMarker = mView.findViewById(R.id.cancelButton);
         Button addFieldButton = mView.findViewById(R.id.addFieldButton);
-        //TODO Fix so that you can choose colors/images
+        Button deleteMarker = mView.findViewById(R.id.deleteMarker);
         final RadioGroup radioGroup = mView.findViewById(R.id.radioGroup);
 
         final ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
@@ -275,6 +279,8 @@ public class OverviewFragment extends Fragment {
             }
         });
 
+        deleteMarker.setVisibility(View.INVISIBLE);
+
         saveNewMarker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -285,8 +291,6 @@ public class OverviewFragment extends Fragment {
                 }
 
                 Toast.makeText(getContext(), "Marker added", Toast.LENGTH_SHORT).show();
-                //loadMarker(customMarker);
-                //TODO save to database
                 databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
                 databaseMarkerRef.setValue(customMarker);
                 dialog.dismiss();
@@ -296,8 +300,13 @@ public class OverviewFragment extends Fragment {
         dialog.show();
     }
 
+    public void deleteMarker(final CustomMarker customMarker){
+        databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
+        databaseMarkerRef.removeValue();
+    }
+
     @SuppressLint("ClickableViewAccessibility")
-    public void loadMarker(final CustomMarker customMarker){ //TODO Load customMarkerList
+    public void loadMarker(final CustomMarker customMarker){
         visibleMarker = new VisibleMarker(customMarker.getMarkerId(), customMarker.getxPos(), customMarker.getyPos());
 
         imageCircle = new ImageButton(getActivity());
@@ -310,26 +319,12 @@ public class OverviewFragment extends Fragment {
         layoutParams.setMargins((int)visibleMarker.getxPos(), (int)visibleMarker.getyPos(), 0, 0);
         checkImageOrColor(customMarker, imageCircle, "MapMarker");
         imageCircle.setLayoutParams(layoutParams);
-        myLayout.addView(imageCircle);
-        visibleCustomMarkerList.add(imageCircle);
 
-       imageCircle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ImageButton clickedButton = (ImageButton) v;
-                int index = visibleCustomMarkerList.indexOf(clickedButton);
-                if(index!=-1){
-                    System.out.println("Clicked marker " + index);
-                    showMarker(customMarkerList.get(index));
-                }
-            }
-        });
-
-        /*imageCircle.setOnTouchListener(new View.OnTouchListener() {
+        imageCircle.setOnTouchListener(new View.OnTouchListener() {
             int prevX, prevY;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(v.getLayoutParams());
+                final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(imageCircle.getLayoutParams());
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     timeWhenDown = System.currentTimeMillis();
                     Log.d("Action Down: " , String.valueOf(timeWhenDown));
@@ -337,12 +332,14 @@ public class OverviewFragment extends Fragment {
                 }
                 if(event.getAction() == MotionEvent.ACTION_MOVE){
                     if(System.currentTimeMillis() > timeWhenDown + 500){
+                        v.setVisibility(View.INVISIBLE);
                         Log.d("Action Move: ", String.valueOf(System.currentTimeMillis()));
                         params.topMargin += (int)event.getRawY() - prevY;
                         prevY = (int)event.getRawY();
                         params.leftMargin += (int)event.getRawX() - prevX;
                         prevX = (int)event.getRawX();
-                        v.setLayoutParams(params);
+                        Log.d("params", String.valueOf(params));
+                        v.setLayoutParams(params); //It never moves the original! But it creates a new one where I let go because of the database valuelistener!
                         return true;
                         }
                 }
@@ -360,7 +357,7 @@ public class OverviewFragment extends Fragment {
                         int index = visibleCustomMarkerList.indexOf(clickedButton);
                         if(index!=-1){
                             System.out.println("Clicked marker " + index);
-                            showMarker(customMarkerList.get(index));
+                            showMarker(customMarkerList.get(index), index);
                         }
                         Log.d("Action Up: " , String.valueOf(System.currentTimeMillis()));
                         return true;
@@ -368,18 +365,22 @@ public class OverviewFragment extends Fragment {
                 }
                 return true;
             }
-        });*/
+        });
+        myLayout.addView(imageCircle);
+        visibleMarker.setImageCircle(imageCircle);
+        visibleCustomMarkerList.add(imageCircle);
     }
 
-    public void showMarker(final CustomMarker customMarker){
+    public void showMarker(final CustomMarker customMarker, int index){
         final AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
         View mView = getLayoutInflater().inflate(R.layout.custom_marker_info, null);
-        //TODO Fields to give names, color, image etc should be declared here
         Button saveNewMarker = mView.findViewById(R.id.saveButton);
         Button cancelNewMarker = mView.findViewById(R.id.cancelButton);
         Button addFieldButton = mView.findViewById(R.id.addFieldButton);
-        //TODO Fix so that you can choose colors/images
+        final Button deleteMarker = mView.findViewById(R.id.deleteMarker);
         final RadioGroup radioGroup = mView.findViewById(R.id.radioGroup);
+
+        //final ImageButton imageButton = visibleCustomMarkerList.get(index).getImageCircle();
 
         final ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
         checkImageOrColor(customMarker, markerImage, "IconMarker");
@@ -477,13 +478,36 @@ public class OverviewFragment extends Fragment {
             }
         });
 
+        deleteMarker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface aDialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                deleteMarker(customMarker);
+                                //myLayout.removeView(imageButton);
+                                dialog.dismiss();
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                break;
+                        }
+                    }
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+                        .setNegativeButton("No", dialogClickListener).show();
+            }
+        });
+
         saveNewMarker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 MarkerItem markerItem;
 
-
-                //TODO save to database
                 customMarker.setMarkerName(markerName.getText().toString());
                 for(int i = 0; i < customMarker.getMarkerItems().size(); i++){
                     markerItem = customMarker.getMarkerItems().get(i);
@@ -496,7 +520,6 @@ public class OverviewFragment extends Fragment {
                 }
                 databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
                 databaseMarkerRef.setValue(customMarker);
-                //loadMarker(customMarker);
                 dialog.dismiss();
 
             }
@@ -508,14 +531,19 @@ public class OverviewFragment extends Fragment {
 
     //IMAGES//
     public void loadProfile(){
-        loadImage(backgroundImageRef, backgroundImage);
+        loadImage(backgroundImageRef, myLayout);
     }
 
-    public void loadImage(StorageReference ref, final ImageView imgV){
+    public void loadImage(StorageReference ref, final FrameLayout imgV){
         ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
-                Glide.with(OverviewFragment.this).load(uri).into(imgV);
+                Glide.with(OverviewFragment.this).load(uri).apply(RequestOptions.placeholderOf(R.drawable.ic_launcher_background)).into(new SimpleTarget<Drawable>() {
+                    @Override
+                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        imgV.setBackground(resource);
+                    }
+                });
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
