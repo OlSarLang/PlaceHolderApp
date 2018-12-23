@@ -6,6 +6,11 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -14,11 +19,14 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
+import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -46,6 +54,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.net.URI;
 import java.net.URL;
@@ -65,24 +75,32 @@ public class AccountFragment extends Fragment {
 
     private DatabaseReference mDatabaseRef;
     private DatabaseReference userNameRef;
+    private DatabaseReference privacyRef;
     private DatabaseReference imageDatabaseRef;
 
     private UploadTask uploadTask;
 
     private StorageReference thisReference;
-    private ImageView thisImage;
     private String thisImageType;
     private Uri thisUri;
 
     private ImageView changeProfileImage;
+    private Bitmap profileBitmap;
     private TextView userTextView;
     private Button buttonLogout;
+    private Button mSelectProfileImage;
     private Button mSelectBackgroundImage;
     private Button mSelectCustomImages;
+    private CheckBox checkPrivate;
+
+    private Boolean privacy = true;
 
     private ProgressBar progressBar;
 
     private static final int GALLERY_INTENT = 2;
+
+    int width = 200;
+    int height = 200;
 
 
     @Nullable
@@ -98,6 +116,7 @@ public class AccountFragment extends Fragment {
         customImagesRef = mStorage.child("images/custom/");
         mDatabaseRef = FirebaseDatabase.getInstance().getReference().child(userUid);
         userNameRef = FirebaseDatabase.getInstance().getReference().child(userUid + "/UserName");
+        privacyRef = FirebaseDatabase.getInstance().getReference().child(userUid + "/Privacy");
         imageDatabaseRef = mDatabaseRef.child("/images");
 
         userNameRef.addValueEventListener(new ValueEventListener() {
@@ -128,6 +147,7 @@ public class AccountFragment extends Fragment {
                 alert.setTitle("Change accountname");
                 alert.setMessage("Change name here yo");
                 final EditText input = new EditText(getContext());
+                input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(25)});
                 alert.setView(input);
 
                 alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
@@ -147,20 +167,44 @@ public class AccountFragment extends Fragment {
             }
         });
 
+        checkPrivate = view.findViewById(R.id.checkPrivate);
+        privacyRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() != null){
+                    privacy = (Boolean) dataSnapshot.getValue();
+                    checkPrivate.setChecked(privacy);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        checkPrivate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    privacyRef.setValue(true);
+                }else if(!isChecked){
+                    privacyRef.setValue(false);
+                }
+            }
+        });
+
         progressBar = view.findViewById(R.id.progressBar);
 
         buttonLogout = view.findViewById(R.id.logoutPlaceholder);
 
         loadProfile();
 
-
-        changeProfileImage.setOnClickListener(new View.OnClickListener(){
+        mSelectProfileImage = view.findViewById(R.id.mSelectProfileImage);
+        mSelectProfileImage.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 thisReference = profileImageRef;
-                thisImage = changeProfileImage;
                 thisImageType = "profile";
                 startActivityForResult(intent, GALLERY_INTENT);
             }
@@ -257,9 +301,7 @@ public class AccountFragment extends Fragment {
 
     public void onClick(View v) {
         if(v == buttonLogout){
-            mAuth.signOut();
-            //finish();????
-            startActivity(new Intent(getContext(), LoginActivity.class));
+            ((MainAdminActivity)getActivity()).logOut();
         }
     }
 
@@ -271,15 +313,47 @@ public class AccountFragment extends Fragment {
         ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
-                Glide.with(AccountFragment.this).load(uri).into(imgV);
-                Toast.makeText(getContext(), "Background Loaded", Toast.LENGTH_LONG).show();
+                Picasso.get().load(uri).into(new Target() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                        profileBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+                        changeProfileImage.setImageBitmap(getRoundedShape(profileBitmap));
+                    }
+
+                    @Override
+                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+
+                    }
+
+                    @Override
+                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                    }
+                });
+                Toast.makeText(getContext(), "Profile picture loaded", Toast.LENGTH_LONG).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Background failed", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Profile picture failed to load", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    public Bitmap getRoundedShape(Bitmap scaleBitMapImage){
+        Bitmap targetBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(targetBitmap);
+        Path path = new Path();
+        path.addCircle(((float) width- 1) / 2,
+                ((float)height - 1) / 2,
+                (Math.min(((float) width),
+                        ((float) height)) / 2),
+                Path.Direction.CCW);
+        canvas.clipPath(path);
+        Bitmap sourceBitmap = scaleBitMapImage;
+        canvas.drawBitmap(sourceBitmap, new Rect(0,0, sourceBitmap.getWidth(), sourceBitmap.getHeight()), new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap.getHeight()), null);
+        return targetBitmap;
     }
 
     public class MyAppGlideModule extends AppGlideModule {

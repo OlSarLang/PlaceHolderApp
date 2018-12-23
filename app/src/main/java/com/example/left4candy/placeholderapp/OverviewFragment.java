@@ -5,11 +5,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
+import android.graphics.Canvas;
+import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -22,16 +23,12 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,7 +43,6 @@ import com.bumptech.glide.request.transition.Transition;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.api.LogDescriptor;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -59,7 +55,6 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,13 +94,11 @@ public class OverviewFragment extends Fragment {
     private Bitmap yellowMarker;
     private Bitmap mapMap;
 
-    private String newMarkerId;
-    private String oldMarkerId;
     long timeWhenDown;
 
     //solid color markers
-    private int height = 80;
-    private int width = 80;
+    private int height = 100;
+    private int width = 100;
 
 
 
@@ -214,6 +207,7 @@ public class OverviewFragment extends Fragment {
         Button saveNewMarker = mView.findViewById(R.id.saveButton);
         Button cancelNewMarker = mView.findViewById(R.id.cancelButton);
         Button addFieldButton = mView.findViewById(R.id.addFieldButton);
+        Button removeFieldButton = mView.findViewById(R.id.removeFieldButton);
         Button deleteMarker = mView.findViewById(R.id.deleteMarker);
         final RadioGroup radioGroup = mView.findViewById(R.id.radioGroup);
 
@@ -263,6 +257,9 @@ public class OverviewFragment extends Fragment {
                 }
             }
         });
+
+        addFieldButton.setVisibility(View.INVISIBLE);
+        removeFieldButton.setVisibility(View.INVISIBLE);
 
         addFieldButton.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -377,6 +374,7 @@ public class OverviewFragment extends Fragment {
         Button saveNewMarker = mView.findViewById(R.id.saveButton);
         Button cancelNewMarker = mView.findViewById(R.id.cancelButton);
         Button addFieldButton = mView.findViewById(R.id.addFieldButton);
+        Button removeFieldButton = mView.findViewById(R.id.removeFieldButton);
         final Button deleteMarker = mView.findViewById(R.id.deleteMarker);
         final RadioGroup radioGroup = mView.findViewById(R.id.radioGroup);
 
@@ -396,20 +394,16 @@ public class OverviewFragment extends Fragment {
 
         markerImage.setClickable(true);
 
-        if(!customMarker.isSolid()){
+        if(customMarker.isRed()){
+            radioGroup.check(R.id.radioRed);
+        }else if(customMarker.isGreen()){
+            radioGroup.check(R.id.radioGreen);
+        }else if(customMarker.isBlue()){
+            radioGroup.check(R.id.radioBlue);
+        }else if(customMarker.isYellow()){
+            radioGroup.check(R.id.radioYellow);
+        }else if(!customMarker.isYellow() && !customMarker.isBlue() && !customMarker.isGreen() && !customMarker.isRed()){
             radioGroup.clearCheck();
-        }
-
-        if(customMarker.isSolid()){
-            if(customMarker.isRed()){
-                radioGroup.check(R.id.radioRed);
-            }else if(customMarker.isGreen()){
-                radioGroup.check(R.id.radioGreen);
-            }else if(customMarker.isBlue()){
-                radioGroup.check(R.id.radioBlue);
-            }else if(customMarker.isYellow()){
-                radioGroup.check(R.id.radioYellow);
-            }
         }
 
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -460,7 +454,7 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onClick (View view){
                 MarkerItem newMarkerItem = new MarkerItem();
-                if(customMarker.getMarkerItems().size() > 5){
+                if(customMarker.getMarkerItems().size() > 4){
                     //TODO Crash when 14th has been added
                     Toast.makeText(getContext(), "Too many fields", Toast.LENGTH_LONG).show();
                 }
@@ -471,11 +465,23 @@ public class OverviewFragment extends Fragment {
             }
         });
 
-        cancelNewMarker.setOnClickListener(new View.OnClickListener(){
+        removeFieldButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View view){
-                dialog.dismiss();
+            public void onClick(View v) {
+                if (customMarker.getMarkerItems().isEmpty()) {
+                    Toast.makeText(getContext(), "No field to remove... Sorry :/", Toast.LENGTH_LONG).show();
+                } else {
+                    customMarker.getMarkerItems().remove(customMarker.getMarkerItems().size() - 1);
+                    recyclerViewAdapter.notifyItemRemoved(customMarker.getMarkerItems().size());
+                }
             }
+        });
+
+        cancelNewMarker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                }
         });
 
         deleteMarker.setOnClickListener(new View.OnClickListener() {
@@ -498,7 +504,7 @@ public class OverviewFragment extends Fragment {
                 };
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+                builder.setMessage("This will completely remove the marker. Are you sure?").setPositiveButton("Yes", dialogClickListener)
                         .setNegativeButton("No", dialogClickListener).show();
             }
         });
@@ -622,7 +628,7 @@ public class OverviewFragment extends Fragment {
                         @Override
                         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                             mapMap = Bitmap.createScaledBitmap(bitmap, width, height, false);
-                            imageView.setImageBitmap(mapMap);
+                            imageView.setImageBitmap(getRoundedShape(mapMap));
                         }
                         @Override
                         public void onBitmapFailed(Exception e, Drawable errorDrawable) {
@@ -643,6 +649,22 @@ public class OverviewFragment extends Fragment {
         }
 
 
+    }
+
+    public Bitmap getRoundedShape(Bitmap scaleBitMapImage){
+        Bitmap targetBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(targetBitmap);
+        Path path = new Path();
+        path.addCircle(((float) width- 1) / 2,
+                ((float)height - 1) / 2,
+                (Math.min(((float) width),
+                        ((float) height)) / 2),
+                Path.Direction.CCW);
+        canvas.clipPath(path);
+        Bitmap sourceBitmap = scaleBitMapImage;
+        canvas.drawBitmap(sourceBitmap, new Rect(0,0, sourceBitmap.getWidth(), sourceBitmap.getHeight()), new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap.getHeight()), null);
+        return targetBitmap;
     }
 
     private void openImagePicker(final ImageView imageView, final CustomMarker customMarker){

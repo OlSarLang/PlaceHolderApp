@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:orientation="vertical">
 
     <TextView
@@ -11,6 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_weight="0"
+        android:autoSizeMaxTextSize="36sp"
+        android:autoSizeMinTextSize="8sp"
         android:background="@null"
         android:maxLength="25"
         android:maxLines="1"
@@ -21,7 +24,7 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -30,10 +33,16 @@
             android:id="@+id/frame"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
             android:clickable="false"
-            android:elevation="10dp">
+            android:elevation="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
                 android:id="@+id/changeProfileImage"
@@ -46,16 +55,9 @@
                 android:scaleType="fitXY"
                 app:srcCompat="@drawable/common_google_signin_btn_icon_dark" />
 
-            <ImageView
-                android:id="@+id/circle_crop"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="center"
-                android:src="@drawable/circleframe" />
-
         </FrameLayout>
 
-    </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -65,13 +67,28 @@
         android:layout_weight="0" />
 
     <Button
+        android:id="@+id/mSelectProfileImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:layout_weight="0"
+        android:background="@drawable/mybutton"
+        android:text="Upload Profile picture"
+        android:textColor="@android:color/white" />
+
+    <Button
         android:id="@+id/mSelectBackgroundImage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
         android:layout_weight="0"
-        android:text="Upload main background" />
+        android:background="@drawable/mybutton"
+        android:text="Upload main background"
+        android:textColor="@android:color/white" />
 
     <Button
         android:id="@+id/mSelectCustomImages"
@@ -79,15 +96,32 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
         android:layout_weight="0"
-        android:text="Upload Custom Images" />
+        android:background="@drawable/mybutton"
+        android:text="Upload Custom Images"
+        android:textColor="@android:color/white" />
 
     <Button
         android:id="@+id/logoutPlaceholder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_margin="10dp"
         android:layout_weight="0"
-        android:text="Logga ut" />
+        android:background="@drawable/mybutton"
+        android:text="Logga ut"
+        android:textColor="@android:color/white" />
+
+    <CheckBox
+        android:id="@+id/checkPrivate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="10dp"
+        android:layout_weight="0"
+        android:text="Private"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </LinearLayout>

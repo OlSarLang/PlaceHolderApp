@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="Användarlogin"
+            android:textColor="@android:color/black"
             android:textSize="30sp" />
 
         <EditText
@@ -38,10 +39,13 @@
 
         <Button
             android:id="@+id/loginButton"
-            android:layout_width="match_parent"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_margin="15dp"
-            android:text="Login" />
+            android:background="@drawable/mybutton"
+            android:text="Login"
+            android:textColor="@android:color/white" />
 
     </LinearLayout>
 </RelativeLayout>

@@ -16,6 +16,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/colorPrimary"
             android:orientation="horizontal">
 
             <TextView
@@ -23,8 +24,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:layout_marginLeft="20dp"
                 android:layout_weight="1"
+                android:autoSizeMaxTextSize="36sp"
+                android:autoSizeMinTextSize="8sp"
                 android:text="TextView"
+                android:textColor="@android:color/white"
                 android:textSize="24sp" />
 
             <FrameLayout
@@ -50,13 +55,6 @@
                     android:scaleType="fitXY"
                     app:srcCompat="@drawable/common_google_signin_btn_icon_dark" />
 
-                <ImageView
-                    android:id="@+id/circle_crop"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:layout_gravity="right"
-                    android:src="@drawable/circleframe" />
-
             </FrameLayout>
 
         </LinearLayout>
@@ -65,7 +63,11 @@
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:elevation="10dp">
+            android:background="@color/colorAccent"
+            android:elevation="10dp"
+            app:tabIndicatorColor="@color/colorPrimaryDark"
+            app:tabSelectedTextColor="@android:color/white"
+            app:tabTextColor="@android:color/white">
 
             <android.support.design.widget.TabItem
                 android:layout_width="wrap_content"
