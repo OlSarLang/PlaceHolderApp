@@ -20,6 +20,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
@@ -68,8 +70,6 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
     private TextView userTextView;
     private Bitmap profileBitmap;
 
-    private ProgressDialog mProgressDialog;
-
     int width = 200;
     int height = 200;
 
@@ -86,7 +86,6 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
         }
         FirebaseUser user = mAuth.getCurrentUser();
 
-        mProgressDialog = new ProgressDialog(this);
 
         profileImageRef = mStorage.child("images/profile.jpg");
         profileImage = findViewById(R.id.profileImage);
@@ -117,6 +116,9 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
         setupViewPager(mViewPager);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+
+
     }
 
     private void setupViewPager(ViewPager viewPager){
@@ -129,6 +131,7 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onClick(View v) {
+
     }
 
     public void loadImage(StorageReference ref, final ImageView imgV){

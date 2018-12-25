@@ -15,7 +15,7 @@
             android:id="@+id/exitImagePicker"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@android:drawable/btn_dialog" />
+            android:background="@android:drawable/ic_delete" />
 
         <ScrollView
             android:layout_width="match_parent"

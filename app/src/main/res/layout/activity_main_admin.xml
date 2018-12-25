@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -15,8 +14,9 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
+            android:elevation="50dp"
             android:orientation="horizontal">
 
             <TextView
@@ -28,8 +28,9 @@
                 android:layout_weight="1"
                 android:autoSizeMaxTextSize="36sp"
                 android:autoSizeMinTextSize="8sp"
+                android:fontFamily="serif"
                 android:text="TextView"
-                android:textColor="@android:color/white"
+                android:textColor="@color/browser_actions_text_color"
                 android:textSize="24sp" />
 
             <FrameLayout
@@ -42,7 +43,7 @@
                 android:layout_marginBottom="5dp"
                 android:layout_weight="0"
                 android:clickable="false"
-                android:elevation="10dp">
+                android:elevation="100dp">
 
                 <ImageView
                     android:id="@+id/profileImage"
@@ -52,6 +53,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_gravity="right"
                     android:layout_weight="1"
+                    android:padding="5dp"
                     android:scaleType="fitXY"
                     app:srcCompat="@drawable/common_google_signin_btn_icon_dark" />
 
@@ -63,11 +65,13 @@
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorAccent"
-            android:elevation="10dp"
-            app:tabIndicatorColor="@color/colorPrimaryDark"
-            app:tabSelectedTextColor="@android:color/white"
-            app:tabTextColor="@android:color/white">
+            android:background="@drawable/mybuttonrect"
+            android:elevation="50dp"
+            app:tabBackground="@drawable/tab_color_selector"
+            app:tabIndicatorColor="@color/common_google_signin_btn_text_dark_focused"
+            app:tabSelectedTextColor="@color/browser_actions_text_color"
+            app:tabTextAppearance="@style/TabFont"
+            app:tabTextColor="@color/browser_actions_text_color">
 
             <android.support.design.widget.TabItem
                 android:layout_width="wrap_content"
@@ -88,7 +92,8 @@
         <com.example.left4candy.placeholderapp.CustomViewPager
             android:id="@+id/container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:translationZ="-50dp" />
 
     </LinearLayout>
 

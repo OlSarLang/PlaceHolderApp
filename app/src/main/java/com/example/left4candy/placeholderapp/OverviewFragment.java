@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -24,6 +25,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -32,6 +34,7 @@ import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Registry;
@@ -86,7 +89,7 @@ public class OverviewFragment extends Fragment {
     private RecyclerView imageRecyclerView;
     private ImagePickerAdapter iAdapter;
     private List<Upload> iUploads;
-    private ProgressBar iProgressCircle;
+    private ToggleButton togglePlaceMarker;
 
     private Bitmap redMarker;
     private Bitmap greenMarker;
@@ -94,18 +97,19 @@ public class OverviewFragment extends Fragment {
     private Bitmap yellowMarker;
     private Bitmap mapMap;
 
+    private View thisView;
+
     long timeWhenDown;
+    private boolean placeMarker;
+
 
     //solid color markers
     private int height = 100;
     private int width = 100;
 
 
-
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.overview_fragment, container, false);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         //FIREBASE USER INFO
         mAuth = FirebaseAuth.getInstance();
         mStorage = FirebaseStorage.getInstance().getReference().child(userUid);
@@ -132,8 +136,6 @@ public class OverviewFragment extends Fragment {
             }
         });
 
-
-
         //TODO ondata change listener instead of loadimages
 
         BitmapDrawable bitmapRed = (BitmapDrawable)getResources().getDrawable(R.drawable.colorred);
@@ -151,13 +153,34 @@ public class OverviewFragment extends Fragment {
 
         customMarkerList = new ArrayList<>();
         visibleCustomMarkerList = new ArrayList<>();
+        super.onCreate(savedInstanceState);
+    }
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.overview_fragment, container, false);
+
+        togglePlaceMarker = view.findViewById(R.id.togglePlaceMarker);
+        togglePlaceMarker.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    togglePlaceMarker.setBackgroundDrawable(ContextCompat.getDrawable(getContext(), R.drawable.colorred));
+                    placeMarker = true;
+                }else{
+                    togglePlaceMarker.setBackgroundDrawable(ContextCompat.getDrawable(getContext(), R.drawable.colorgreen));
+                    placeMarker = false;
+                }
+            }
+        });
         myLayout = view.findViewById(R.id.rl_container);
         loadProfile();
         addTouchListener();
 
         return view;
     }
+
 
     public void getDatabase(DataSnapshot dataSnapshot){
         Log.d("getDatabase()", "reached");
@@ -182,7 +205,10 @@ public class OverviewFragment extends Fragment {
                 float x = Math.round(event.getX());
                 float y = Math.round(event.getY());
 
-                createMarker(x, y);
+                if(placeMarker == true){
+                    createMarker(x, y);
+                    togglePlaceMarker.setChecked(false);
+                }
 
                 System.out.println("Coordinates: X=" + x +" Y="+ y);
 
@@ -198,7 +224,6 @@ public class OverviewFragment extends Fragment {
 
 
         customMarker = new CustomMarker(placeX, placeY);
-        customMarker.setRed(true);
 
         customMarker.setMarkerName("Hope it works");
 
@@ -221,6 +246,19 @@ public class OverviewFragment extends Fragment {
         Log.d("AlertDialog ", "has been created");
 
         radioGroup.check(R.id.radioGreen);
+        customMarker.setGreen(true);
+
+        if(customMarker.isRed()){
+            radioGroup.check(R.id.radioRed);
+        }else if(customMarker.isGreen()){
+            radioGroup.check(R.id.radioGreen);
+        }else if(customMarker.isBlue()){
+            radioGroup.check(R.id.radioBlue);
+        }else if(customMarker.isYellow()){
+            radioGroup.check(R.id.radioYellow);
+        }else if(!customMarker.isYellow() && !customMarker.isBlue() && !customMarker.isGreen() && !customMarker.isRed()){
+            radioGroup.clearCheck();
+        }
 
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -674,7 +712,7 @@ public class OverviewFragment extends Fragment {
         imageRecyclerView.setHasFixedSize(true);
         imageRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         Button exitImagePicker = (Button) iView.findViewById(R.id.exitImagePicker);
-        iProgressCircle = iView.findViewById(R.id.progressCircle);
+
         iUploads = new ArrayList<Upload>();
 
 
@@ -689,6 +727,7 @@ public class OverviewFragment extends Fragment {
         iDatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                 for(DataSnapshot postSnapshot : dataSnapshot.getChildren()){
                     Upload upload = postSnapshot.getValue(Upload.class);
                     iUploads.add(upload);
@@ -696,7 +735,6 @@ public class OverviewFragment extends Fragment {
                 }
                 iAdapter = new ImagePickerAdapter(getContext(), iUploads);
                 imageRecyclerView.setAdapter(iAdapter);
-                iProgressCircle.setVisibility(View.INVISIBLE);
 
                 iAdapter.setOnImageClickListener(new ImagePickerAdapter.onRecyclerViewItemClickListener() {
                     @Override
@@ -720,7 +758,6 @@ public class OverviewFragment extends Fragment {
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                iProgressCircle.setVisibility(View.INVISIBLE);
             }
         });
         imageDialog.show();

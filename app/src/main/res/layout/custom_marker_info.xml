@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorSecondary">
+    android:background="@drawable/mybutton">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
-        android:background="@android:color/white"
+        android:background="@drawable/mybutton"
         android:gravity="center"
         android:orientation="vertical">
 
@@ -18,7 +18,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0"
-            android:background="@color/colorPrimary"
             android:orientation="horizontal">
 
             <EditText
@@ -31,7 +30,7 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="TextView"
-                android:textColor="@android:color/white"
+                android:textColor="@color/colorPrimaryDark"
                 android:textSize="30sp"
                 android:textStyle="italic"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -48,7 +47,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:layout_weight="0"
-                android:background="@android:drawable/ic_delete"
+                android:background="@android:drawable/ic_menu_delete"
                 android:textSize="8sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/markerName"
@@ -94,14 +93,6 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/colorred"
                 android:scaleType="fitXY" />
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
-                android:scaleType="fitXY"
-                app:srcCompat="@drawable/circleframe" />
 
         </FrameLayout>
 
@@ -176,20 +167,17 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_margin="5dp"
-            android:background="@drawable/mybutton"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/markerInfoHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:layout_weight="1"
                 android:maxLines="1"
                 android:text="Info"
                 android:textAlignment="center"
-                android:textColor="@android:color/white"
+                android:textColor="@color/colorPrimaryDark"
                 android:textSize="24sp"
                 android:textStyle="bold|italic" />
 
@@ -201,14 +189,12 @@
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:layout_weight="1"
-            android:background="@drawable/mybutton"
-            android:elevation="-5dp"
+            android:elevation="-10dp"
             android:padding="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
                 android:orientation="vertical">
 
 
@@ -233,10 +219,12 @@
                 android:layout_height="25dp"
                 android:background="@drawable/remove"
                 android:textColor="@android:color/white" />
+
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
+
             <Button
                 android:id="@+id/addFieldButton"
                 android:layout_width="25dp"

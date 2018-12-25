@@ -4,14 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipToPadding="false"
     android:orientation="horizontal">
 
     <ToggleButton
         android:id="@+id/togglePlaceMarker"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@color/browser_actions_divider_color"
-        android:text="ToggleButton"
+        android:background="@drawable/roundedbutton"
+        android:translationZ="16dp"
+        android:textOff="Add"
+        android:textOn=""
+        android:textSize="12sp"
         app:layout_constraintStart_toStartOf="@+id/rl_container"
         app:layout_constraintTop_toTopOf="@+id/rl_container" />
 
