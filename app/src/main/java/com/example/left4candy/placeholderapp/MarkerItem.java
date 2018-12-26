@@ -1,16 +1,17 @@
 package com.example.left4candy.placeholderapp;
 
+import android.content.res.Resources;
+
 /**
  * Created by shootymcface on 11/28/18.
  */
 
 public class MarkerItem {
-
-    private String header = "empty";
-    private String subHeader = "empty";
+    private String header = "";
+    private String subHeader = "";
 
     public MarkerItem(){
-        this("empty", "empty");
+        this("", "");
     }
 
     public MarkerItem(String header, String subHeaderOne){

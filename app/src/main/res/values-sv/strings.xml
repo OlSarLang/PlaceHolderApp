@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">PlaceHolderApp</string>
+
+    <!-- Login Activity -->
+    <string name="UserLogin">Användarlogin</string>
+    <string name="email">Skriv in e-mail</string>
+    <string name="password">Skriv in lösenord</string>
+    <string name="login">Logga in</string>
+
+    <!-- Main Admin Activity -->
+    <string name="ListView">Lista</string>
+    <string name="Overview">Överblick</string>
+    <string name="Account">Konto</string>
+
+    <!-- List Fragment -->
+
+    <!-- Overview Fragment -->
+    <string name="Add">Ny</string>
+        <!-- MarkerInfo -->
+        <string name="Custommarker">Skriv in namn</string>
+        <string name="Information">Information</string>
+        <string name="Save">Spara</string>
+        <string name="Cancel">Avbryt</string>
+        <string name="NewMarkerAddField">Du behöver skapa markören innan du lägger till fält</string>
+        <string name="MarkerAdded">Markör tillagd</string>
+        <string name="TooManyFields">För många fält</string>
+        <string name="NoFieldRemove">Inga fält att ta bort.</string>
+        <!-- Delete marker -->
+        <string name="DeleteMarker">Är du säker på att du vill ta bort markören?</string>
+        <string name="Yes">Ja</string>
+        <string name="No">Nej</string>
+        <!-- Field Item -->
+        <string name="Header">Titel</string>
+        <string name="Subheader">Text</string>
+
+    <!-- Account Fragment -->
+    <string name="Private">Privat</string>
+    <string name="UploadProfile">Byt profilbild</string>
+    <string name="UploadBackground">Byt överblicksbild</string>
+    <string name="UploadCustom">Ladda upp anpassad bild</string>
+    <string name="Images">Bilder</string>
+    <string name="AccountSettings">Kontoinställningar</string>
+    <string name="LogOut">Logga ut</string>
+    <string name="SetPrivacy">Växla privat profil På och Av</string>
+    <string name="AccountName">Kontonamn</string>
+
+</resources>

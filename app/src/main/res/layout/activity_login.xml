@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="332dp"
         android:layout_centerVertical="true"
+        android:alpha=".8"
         android:orientation="vertical">
 
         <TextView
@@ -17,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="Användarlogin"
+            android:text="@string/UserLogin"
             android:textColor="@android:color/black"
             android:textSize="30sp" />
 
@@ -26,7 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="15dp"
-            android:hint="Enter email"
+            android:hint="@string/email"
             android:inputType="textEmailAddress" />
 
         <EditText
@@ -34,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="15dp"
-            android:hint="Enter password"
+            android:hint="@string/password"
             android:inputType="textPassword" />
 
         <Button
@@ -43,9 +44,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="15dp"
-            android:background="@drawable/mybutton"
-            android:text="Login"
-            android:textColor="@android:color/white" />
+            android:background="@drawable/customborder"
+            android:text="@string/login"
+            android:textColor="@color/primaryTextColor" />
 
     </LinearLayout>
 </RelativeLayout>

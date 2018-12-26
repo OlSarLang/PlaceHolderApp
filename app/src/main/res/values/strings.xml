@@ -1,3 +1,47 @@
 <resources>
     <string name="app_name">PlaceHolderApp</string>
+
+    <!-- Login Activity -->
+    <string name="UserLogin">User Login</string>
+    <string name="email">Enter email</string>
+    <string name="password">Enter password</string>
+    <string name="login">Log in</string>
+
+    <!-- Main Admin Activity -->
+    <string name="ListView">List</string>
+    <string name="Overview">Overview</string>
+    <string name="Account">Account</string>
+
+    <!-- List Fragment -->
+
+    <!-- Overview Fragment -->
+    <string name="Add">New</string>
+        <!-- MarkerInfo -->
+        <string name="Custommarker">Enter name</string>
+        <string name="Information">Information</string>
+        <string name="Save">Save</string>
+        <string name="Cancel">Cancel</string>
+        <string name="NewMarkerAddField">You need to create the marker before adding fields</string>
+        <string name="MarkerAdded">Marker Added</string>
+        <string name="TooManyFields">Too many fields</string>
+        <string name="NoFieldRemove">No fields to remove... Sorry :(</string>
+        <!-- Delete marker -->
+        <string name="DeleteMarker">This will completely remove the marker. Are you sure?</string>
+        <string name="Yes">Yes</string>
+        <string name="No">No</string>
+        <!-- Field Item -->
+        <string name="Header">Title</string>
+        <string name="Subheader">Text</string>
+
+    <!-- Account Fragment -->
+    <string name="Private">Private</string>
+    <string name="UploadProfile">Change Profile Picture</string>
+    <string name="UploadBackground">Change Main Background</string>
+    <string name="UploadCustom">Upload Custom Images</string>
+    <string name="Images">Images</string>
+    <string name="AccountSettings">Account Settings</string>
+    <string name="LogOut">Log Out</string>
+    <string name="SetPrivacy">Toggle Privacy On or Off</string>
+    <string name="AccountName">Account Name</string>
+
 </resources>

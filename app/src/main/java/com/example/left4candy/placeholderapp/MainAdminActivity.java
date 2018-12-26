@@ -104,7 +104,6 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
                     userTextView.setText(userName);
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
@@ -116,10 +115,8 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
         setupViewPager(mViewPager);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-
-
-
     }
+
 
     private void setupViewPager(ViewPager viewPager){
         SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
@@ -142,7 +139,7 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
                     @Override
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         profileBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
-                        profileImage.setImageBitmap(getRoundedShape(profileBitmap));
+                        imgV.setImageBitmap(getRoundedShape(profileBitmap));
                     }
 
                     @Override
@@ -203,8 +200,9 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
     }
 
     public void logOut(){
+        Log.d("MainActivity", "Logout");
         mAuth.signOut();
-        Log.d("LOGOUT!!!", "should log out");
+        Log.d("MainActivity", "after signout");
         //finish();????
         startActivity(new Intent(this, LoginActivity.class));
     }

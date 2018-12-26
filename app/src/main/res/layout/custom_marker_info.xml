@@ -2,15 +2,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/mybutton">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
-        android:background="@drawable/mybutton"
         android:gravity="center"
         android:orientation="vertical">
 
@@ -18,6 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0"
+            android:alpha=".8"
             android:orientation="horizontal">
 
             <EditText
@@ -30,7 +29,7 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="TextView"
-                android:textColor="@color/colorPrimaryDark"
+                android:textColor="@color/primaryTextColor"
                 android:textSize="30sp"
                 android:textStyle="italic"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -44,14 +43,11 @@
                 android:layout_height="40dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:layout_weight="0"
                 android:background="@android:drawable/ic_menu_delete"
                 android:textSize="8sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/markerName"
-                app:layout_constraintHorizontal_bias="0.111"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="1.0" />
@@ -61,6 +57,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:alpha=".8"
             android:orientation="horizontal">
 
             <TextView
@@ -82,8 +79,8 @@
         </LinearLayout>
 
         <FrameLayout
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true">
 
@@ -93,6 +90,12 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/colorred"
                 android:scaleType="fitXY" />
+
+            <ImageView
+                android:id="@+id/imageView5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/circleframe" />
 
         </FrameLayout>
 
@@ -107,7 +110,8 @@
                 android:id="@+id/radioRed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0" />
+                android:layout_weight="0"
+                android:backgroundTint="@color/colorPrimaryDark" />
 
             <ImageView
                 android:id="@+id/imageView"
@@ -121,7 +125,8 @@
                 android:id="@+id/radioGreen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0" />
+                android:layout_weight="0"
+                android:backgroundTint="@color/colorPrimaryDark" />
 
             <ImageView
                 android:id="@+id/imageView2"
@@ -136,7 +141,8 @@
                 android:id="@+id/radioBlue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0" />
+                android:layout_weight="0"
+                android:backgroundTint="@color/colorPrimaryDark" />
 
             <ImageView
                 android:id="@+id/imageView3"
@@ -151,7 +157,8 @@
                 android:id="@+id/radioYellow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0" />
+                android:layout_weight="0"
+                android:backgroundTint="@color/colorPrimaryDark" />
 
             <ImageView
                 android:id="@+id/imageView4"
@@ -167,6 +174,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
+            android:alpha=".8"
             android:orientation="horizontal">
 
             <TextView
@@ -175,9 +183,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:maxLines="1"
-                android:text="Info"
+                android:text="@string/Information"
                 android:textAlignment="center"
-                android:textColor="@color/colorPrimaryDark"
+                android:textColor="@color/primaryTextColor"
                 android:textSize="24sp"
                 android:textStyle="bold|italic" />
 
@@ -189,6 +197,7 @@
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:layout_weight="1"
+            android:background="@color/colorPrimaryDark"
             android:elevation="-10dp"
             android:padding="2dp">
 
@@ -211,6 +220,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:layout_weight="0"
+            android:alpha=".8"
             android:orientation="horizontal">
 
             <Button
@@ -251,7 +261,7 @@
                 android:layout_weight="1"
                 android:backgroundTint="@android:color/holo_red_light"
                 android:elevation="5dp"
-                android:text="Cancel" />
+                android:text="@string/Cancel" />
 
             <Button
                 android:id="@+id/saveButton"
@@ -261,7 +271,7 @@
                 android:layout_weight="1"
                 android:backgroundTint="@android:color/holo_green_light"
                 android:elevation="5dp"
-                android:text="Save" />
+                android:text="@string/Save" />
         </LinearLayout>
 
     </LinearLayout>

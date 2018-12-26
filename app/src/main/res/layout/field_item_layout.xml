@@ -3,7 +3,6 @@
     android:id="@+id/item_parent_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="3dp"
     android:background="@color/colorAccent"
     android:elevation="5dp">
 
@@ -17,29 +16,29 @@
 
         <EditText
             android:id="@+id/headertext"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="0"
             android:maxLength="15"
             android:maxLines="1"
             android:minEms="2"
             android:scrollHorizontally="false"
-            android:text="header"
-            android:textAlignment="center"
+            android:text="@string/Header"
+            android:textAlignment="textStart"
             android:textColor="@android:color/black"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/subheadertext"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:inputType="textCapSentences|textMultiLine"
             android:maxEms="6"
             android:maxLength="100"
             android:maxLines="10"
-            android:text="subheader"
-            android:textAlignment="center"
+            android:text="@string/Subheader"
+            android:textAlignment="textStart"
             android:textColor="@android:color/black"
             android:textStyle="normal" />
     </LinearLayout>

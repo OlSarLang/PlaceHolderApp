@@ -162,6 +162,7 @@ public class OverviewFragment extends Fragment {
         View view = inflater.inflate(R.layout.overview_fragment, container, false);
 
         togglePlaceMarker = view.findViewById(R.id.togglePlaceMarker);
+
         togglePlaceMarker.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -174,6 +175,7 @@ public class OverviewFragment extends Fragment {
                 }
             }
         });
+        togglePlaceMarker.setBackgroundDrawable(getResources().getDrawable(R.drawable.colorgreen));
         myLayout = view.findViewById(R.id.rl_container);
         loadProfile();
         addTouchListener();
@@ -181,6 +183,22 @@ public class OverviewFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        databaseMarkerRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.d("onDataChange()", "reached");
+                getDatabase(dataSnapshot);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        super.onResume();
+    }
 
     public void getDatabase(DataSnapshot dataSnapshot){
         Log.d("getDatabase()", "reached");
@@ -206,7 +224,7 @@ public class OverviewFragment extends Fragment {
                 float y = Math.round(event.getY());
 
                 if(placeMarker == true){
-                    createMarker(x, y);
+                    createMarker(x-70, y-70);
                     togglePlaceMarker.setChecked(false);
                 }
 
@@ -302,7 +320,7 @@ public class OverviewFragment extends Fragment {
         addFieldButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick (View view){
-                Toast.makeText(getContext(), "You need to create the marker before adding fields.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), getResources().getString(R.string.NewMarkerAddField), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -325,7 +343,7 @@ public class OverviewFragment extends Fragment {
                     System.out.println("Amount of items: " + i);
                 }
 
-                Toast.makeText(getContext(), "Marker added", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getResources().getString(R.string.MarkerAdded), Toast.LENGTH_SHORT).show();
                 databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
                 databaseMarkerRef.setValue(customMarker);
                 dialog.dismiss();
@@ -380,8 +398,8 @@ public class OverviewFragment extends Fragment {
                 }
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     if(System.currentTimeMillis() > timeWhenDown + 500){
-                        customMarker.setyPos(event.getY());
-                        customMarker.setxPos(event.getX());
+                        customMarker.setyPos(event.getY()-70);
+                        customMarker.setxPos(event.getX()-70);
                         databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
                         databaseMarkerRef.setValue(customMarker);
                         Log.d("Action Up: " , String.valueOf(System.currentTimeMillis()));
@@ -428,7 +446,6 @@ public class OverviewFragment extends Fragment {
         aBuilder.setView(mView);
         initRecyclerView(mView, customMarker);
         final AlertDialog dialog = aBuilder.create();
-        Log.d("AlertDialog ", "has been created");
 
         markerImage.setClickable(true);
 
@@ -494,7 +511,7 @@ public class OverviewFragment extends Fragment {
                 MarkerItem newMarkerItem = new MarkerItem();
                 if(customMarker.getMarkerItems().size() > 4){
                     //TODO Crash when 14th has been added
-                    Toast.makeText(getContext(), "Too many fields", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), getResources().getString(R.string.TooManyFields), Toast.LENGTH_LONG).show();
                 }
                 else{
                     customMarker.getMarkerItems().add(newMarkerItem);
@@ -507,7 +524,7 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (customMarker.getMarkerItems().isEmpty()) {
-                    Toast.makeText(getContext(), "No field to remove... Sorry :/", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), getResources().getString(R.string.NoFieldRemove), Toast.LENGTH_LONG).show();
                 } else {
                     customMarker.getMarkerItems().remove(customMarker.getMarkerItems().size() - 1);
                     recyclerViewAdapter.notifyItemRemoved(customMarker.getMarkerItems().size());
@@ -542,8 +559,8 @@ public class OverviewFragment extends Fragment {
                 };
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setMessage("This will completely remove the marker. Are you sure?").setPositiveButton("Yes", dialogClickListener)
-                        .setNegativeButton("No", dialogClickListener).show();
+                builder.setMessage(getResources().getString(R.string.DeleteMarker)).setPositiveButton(getResources().getString(R.string.Yes), dialogClickListener)
+                        .setNegativeButton(getResources().getString(R.string.No), dialogClickListener).show();
             }
         });
 

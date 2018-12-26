@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:alpha=".8"
     android:clipToPadding="false"
     android:orientation="horizontal">
 
@@ -12,10 +13,11 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:background="@drawable/roundedbutton"
-        android:translationZ="16dp"
-        android:textOff="Add"
+        android:fontFamily="@font/cabin"
+        android:textOff="@string/Add"
         android:textOn=""
         android:textSize="12sp"
+        android:translationZ="16dp"
         app:layout_constraintStart_toStartOf="@+id/rl_container"
         app:layout_constraintTop_toTopOf="@+id/rl_container" />
 

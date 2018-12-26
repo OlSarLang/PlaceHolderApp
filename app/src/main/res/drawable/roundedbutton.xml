@@ -2,6 +2,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
     <solid android:state_checked="false"
+        android:color="@color/colorGreen"/>
+    <solid android:state_checked="true"
         android:color="@color/colorRed"/>
-
 </shape>

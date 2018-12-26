@@ -15,6 +15,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:alpha=".8"
             android:background="@color/colorPrimary"
             android:elevation="50dp"
             android:orientation="horizontal">
@@ -28,7 +29,7 @@
                 android:layout_weight="1"
                 android:autoSizeMaxTextSize="36sp"
                 android:autoSizeMinTextSize="8sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/cabin"
                 android:text="TextView"
                 android:textColor="@color/browser_actions_text_color"
                 android:textSize="24sp" />
@@ -65,6 +66,7 @@
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:alpha=".8"
             android:background="@drawable/mybuttonrect"
             android:elevation="50dp"
             app:tabBackground="@drawable/tab_color_selector"

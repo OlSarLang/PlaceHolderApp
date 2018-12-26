@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -196,6 +197,14 @@ public class AccountFragment extends Fragment {
 
         buttonLogout = view.findViewById(R.id.logoutPlaceholder);
 
+        buttonLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("AccountFragment", "Logout");
+                ((MainAdminActivity)getActivity()).logOut();
+            }
+        });
+
         loadProfile();
 
         mSelectProfileImage = view.findViewById(R.id.mSelectProfileImage);
@@ -297,12 +306,6 @@ public class AccountFragment extends Fragment {
 
                         }
                     });
-    }
-
-    public void onClick(View v) {
-        if(v == buttonLogout){
-            ((MainAdminActivity)getActivity()).logOut();
-        }
     }
 
     public void loadProfile(){
