@@ -16,7 +16,6 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class MarkerRecyclerViewAdapter extends RecyclerView.Adapter<MarkerRecyclerViewAdapter.ViewHolder> {
 
     private static final String TAG = "MarkerRecyclerViewAdapt";

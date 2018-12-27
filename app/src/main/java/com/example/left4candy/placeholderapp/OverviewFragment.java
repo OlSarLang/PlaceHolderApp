@@ -107,7 +107,6 @@ public class OverviewFragment extends Fragment {
     private int height = 100;
     private int width = 100;
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         //FIREBASE USER INFO
@@ -123,6 +122,8 @@ public class OverviewFragment extends Fragment {
         iDatabaseRef = mDatabase.child("images/custom/");
         databaseMarkerRef = mDatabase.child("markers/");
 
+        customMarkerList = new ArrayList<>();
+        visibleCustomMarkerList = new ArrayList<>();
         databaseMarkerRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -150,9 +151,6 @@ public class OverviewFragment extends Fragment {
         greenMarker = Bitmap.createScaledBitmap(green, width, height, false);
         blueMarker = Bitmap.createScaledBitmap(blue, width, height, false);
         yellowMarker = Bitmap.createScaledBitmap(yellow, width, height, false);
-
-        customMarkerList = new ArrayList<>();
-        visibleCustomMarkerList = new ArrayList<>();
         super.onCreate(savedInstanceState);
     }
 
@@ -255,7 +253,7 @@ public class OverviewFragment extends Fragment {
         final RadioGroup radioGroup = mView.findViewById(R.id.radioGroup);
 
         final ImageView markerImage = mView.findViewById(R.id.custom_marker_icon);
-        markerImage.setImageResource(R.drawable.colorgreen);
+        markerImage.setImageResource(R.drawable.colorred);
         final EditText markerName = mView.findViewById(R.id.markerName);
 
         aBuilder.setView(mView);
@@ -263,8 +261,8 @@ public class OverviewFragment extends Fragment {
         final AlertDialog dialog = aBuilder.create();
         Log.d("AlertDialog ", "has been created");
 
-        radioGroup.check(R.id.radioGreen);
-        customMarker.setGreen(true);
+        radioGroup.check(R.id.radioRed);
+        customMarker.setRed(true);
 
         if(customMarker.isRed()){
             radioGroup.check(R.id.radioRed);
@@ -410,7 +408,7 @@ public class OverviewFragment extends Fragment {
                         int index = visibleCustomMarkerList.indexOf(clickedButton);
                         if(index!=-1){
                             System.out.println("Clicked marker " + index);
-                            showMarker(customMarkerList.get(index), index);
+                            showMarker(customMarkerList.get(index));
                         }
                         Log.d("Action Up: " , String.valueOf(System.currentTimeMillis()));
                         return true;
@@ -424,7 +422,7 @@ public class OverviewFragment extends Fragment {
         visibleCustomMarkerList.add(imageCircle);
     }
 
-    public void showMarker(final CustomMarker customMarker, int index){
+    public void showMarker(final CustomMarker customMarker){
         final AlertDialog.Builder aBuilder = new AlertDialog.Builder(getContext());
         View mView = getLayoutInflater().inflate(R.layout.custom_marker_info, null);
         Button saveNewMarker = mView.findViewById(R.id.saveButton);
@@ -588,6 +586,10 @@ public class OverviewFragment extends Fragment {
 
 
         dialog.show();
+    }
+
+    public void openMarkerAt(int position){
+        showMarker(customMarkerList.get(position));
     }
 
     //IMAGES//

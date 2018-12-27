@@ -13,6 +13,7 @@
     <string name="Account">Konto</string>
 
     <!-- List Fragment -->
+    <string name="Name">Namn</string>
 
     <!-- Overview Fragment -->
     <string name="Add">Ny</string>

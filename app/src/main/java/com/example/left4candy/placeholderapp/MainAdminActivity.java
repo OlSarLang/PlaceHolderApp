@@ -55,7 +55,7 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
     private OverviewFragment overviewFragment = new OverviewFragment();
     private AccountFragment accountFragment = new AccountFragment();
-    private ListFragment listFragment = new ListFragment();
+    private com.example.left4candy.placeholderapp.ListFragment listFragment = new com.example.left4candy.placeholderapp.ListFragment();
 
     private static final String TAG ="MainAdminActivity";
     private SectionsPageAdapter mSectionsPageAdapter;
@@ -111,7 +111,7 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
         loadProfile();
 
-        mViewPager = (CustomViewPager) findViewById(R.id.container);
+        mViewPager = (CustomViewPager) findViewById(R.id.view_pager_container);
         setupViewPager(mViewPager);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -120,10 +120,11 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
     private void setupViewPager(ViewPager viewPager){
         SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
-        adapter.addFragment(listFragment, "List");
-        adapter.addFragment(overviewFragment, "Overview");
-        adapter.addFragment(accountFragment, "Account");
+        adapter.addFragment(listFragment, "List", mViewPager);
+        adapter.addFragment(overviewFragment, "Overview", mViewPager);
+        adapter.addFragment(accountFragment, "Account", mViewPager);
         viewPager.setAdapter(adapter);
+        viewPager.setCurrentItem(1);
     }
 
     @Override
@@ -205,6 +206,11 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
         Log.d("MainActivity", "after signout");
         //finish();????
         startActivity(new Intent(this, LoginActivity.class));
+    }
+
+    public void itemClickedFragmentSwitch(int position){
+        mViewPager.setCurrentItem(1);
+        overviewFragment.openMarkerAt(position);
     }
 
 }

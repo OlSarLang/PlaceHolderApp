@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0"
-            android:alpha=".8"
+            android:alpha=".7"
             android:orientation="horizontal">
 
             <EditText
@@ -26,12 +26,14 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
+                android:autoText="true"
+                android:fontFamily="@font/cabin"
                 android:gravity="center"
+                android:maxLength="25"
                 android:maxLines="1"
                 android:text="TextView"
                 android:textColor="@color/primaryTextColor"
-                android:textSize="30sp"
-                android:textStyle="italic"
+                android:textSize="24sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -65,6 +67,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
+                android:fontFamily="@font/cabin"
                 android:text="id: "
                 android:textSize="30sp" />
 
@@ -73,6 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/cabin"
                 android:text="id"
                 android:textSize="30sp" />
 
@@ -182,12 +186,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:alpha=".8"
+                android:fontFamily="@font/cabin"
                 android:maxLines="1"
                 android:text="@string/Information"
                 android:textAlignment="center"
                 android:textColor="@color/primaryTextColor"
-                android:textSize="24sp"
-                android:textStyle="bold|italic" />
+                android:textSize="24sp" />
 
         </LinearLayout>
 
@@ -197,7 +202,8 @@
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:layout_weight="1"
-            android:background="@color/colorPrimaryDark"
+            android:alpha=".8"
+            android:background="@drawable/customborder"
             android:elevation="-10dp"
             android:padding="2dp">
 
@@ -220,7 +226,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:layout_weight="0"
-            android:alpha=".8"
+            android:alpha=".7"
             android:orientation="horizontal">
 
             <Button
@@ -259,9 +265,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginRight="30dp"
                 android:layout_weight="1"
-                android:backgroundTint="@android:color/holo_red_light"
+                android:alpha=".9"
+                android:background="@drawable/mybutton"
+                android:backgroundTint="@color/colorRed"
+                android:backgroundTintMode="multiply"
                 android:elevation="5dp"
-                android:text="@string/Cancel" />
+                android:fontFamily="@font/cabin"
+                android:text="@string/Cancel"
+                android:textSize="18sp" />
 
             <Button
                 android:id="@+id/saveButton"
@@ -269,9 +280,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="30dp"
                 android:layout_weight="1"
-                android:backgroundTint="@android:color/holo_green_light"
+                android:alpha=".9"
+                android:background="@drawable/mybutton"
+                android:backgroundTint="@color/colorGreen"
+                android:backgroundTintMode="multiply"
                 android:elevation="5dp"
-                android:text="@string/Save" />
+                android:fontFamily="@font/cabin"
+                android:text="@string/Save"
+                android:textSize="18sp" />
         </LinearLayout>
 
     </LinearLayout>

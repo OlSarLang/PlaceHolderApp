@@ -3,6 +3,7 @@ package com.example.left4candy.placeholderapp;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +12,12 @@ public class SectionsPageAdapter extends FragmentPagerAdapter {
 
     private final List<Fragment> mFragmentList = new ArrayList<>();
     private final List<String> mFragmentTitleList = new ArrayList<>();
+    ViewPager viewPager;
 
-    public void addFragment(Fragment fragment, String title){
+    public void addFragment(Fragment fragment, String title, ViewPager viewPager){
         mFragmentList.add(fragment);
         mFragmentTitleList.add(title);
+        this.viewPager = viewPager;
     }
 
     public SectionsPageAdapter(FragmentManager fm){

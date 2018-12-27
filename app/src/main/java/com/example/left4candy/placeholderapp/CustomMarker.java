@@ -31,19 +31,13 @@ public class CustomMarker {
 
     public CustomMarker(float xPos, float yPos){
         this(0000, "placeholder", xPos, yPos, true);
-        markerItem = new MarkerItem("header", "subHeader");
-        markerItems.add(markerItem);
     }
 
     public CustomMarker(int markerId, float xPos, float yPos){
         this(markerId, "name", xPos, yPos, true);
-        markerItem = new MarkerItem("header", "subHeader");
-        markerItems.add(markerItem);
     }
 
     public CustomMarker(int markerId, String markerName, float xPos, float yPos, boolean red){
-        markerItem = new MarkerItem("header", "subHeader");
-        markerItems.add(markerItem);
         id++;
         this.red = red;
         this.markerId = id;
