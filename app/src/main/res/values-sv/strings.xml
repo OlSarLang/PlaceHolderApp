@@ -16,6 +16,8 @@
     <string name="Name">Namn</string>
 
     <!-- Overview Fragment -->
+    <string name="NewHomePos">Sätt hemposition</string>
+    <string name="NewHomePosInfo">Följande kommer bli din nya hemposition. Är du säker?</string>
     <string name="Add">Ny</string>
         <!-- MarkerInfo -->
         <string name="Custommarker">Skriv in namn</string>
@@ -44,5 +46,15 @@
     <string name="LogOut">Logga ut</string>
     <string name="SetPrivacy">Växla privat profil På och Av</string>
     <string name="AccountName">Kontonamn</string>
+    <string name="Change">Ändra</string>
+    <string name="PhoneNumber">Telefonnummer</string>
+    <string name="EmailAccount">E-postadress</string>
+
+    <string name="ChangeName">Byt kontonamn</string>
+    <string name="ChangeNameBelow">Skriv ditt önskade kontonamn nedan</string>
+    <string name="ChangeNumber">Byt kontaktnummer</string>
+    <string name="ChangeNumberBelow">Skriv det nummer som kunder kan nå dig på</string>
+    <string name="ChangeEmail">Byt kontaktmail</string>
+    <string name="ChangeEmailBelow">Skriv den mail som kunder kan nå dig på</string>
 
 </resources>

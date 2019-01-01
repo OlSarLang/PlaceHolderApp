@@ -16,6 +16,8 @@
     <string name="Name">Name</string>
 
     <!-- Overview Fragment -->
+    <string name="NewHomePos">Set Home Position</string>
+    <string name="NewHomePosInfo">The following will be your new home position. Are you sure?</string>
     <string name="Add">New</string>
         <!-- MarkerInfo -->
         <string name="Custommarker">Enter name</string>
@@ -44,5 +46,17 @@
     <string name="LogOut">Log Out</string>
     <string name="SetPrivacy">Toggle Privacy On or Off</string>
     <string name="AccountName">Account Name</string>
+    <string name="Change">Change</string>
+    <string name="PhoneNumber">Phone Number</string>
+    <string name="EmailAccount">E-mail</string>
+
+    <string name="ChangeName">Change Account Name</string>
+    <string name="ChangeNameBelow">Type your desired name below</string>
+    <string name="ChangeNumber">Change Contact Number</string>
+    <string name="ChangeNumberBelow">Type the number for which customers can contact you</string>
+    <string name="ChangeEmail">Change Contact E-mail</string>
+    <string name="ChangeEmailBelow">Type the e-mail for which customers can contact you</string>
+    
+    <string name="google_maps_API_key">AIzaSyCfoWgekgnK9ARKy5OzGCOXgqDNwTsgkFE </string>
 
 </resources>

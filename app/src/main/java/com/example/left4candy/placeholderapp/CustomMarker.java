@@ -3,19 +3,21 @@ package com.example.left4candy.placeholderapp;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class CustomMarker {
 
     //What I need to create
-    private static int id = 0;
+    private static int id = 1;
     private int markerId = 1;
     private String markerName;
-    private float xPos;
-    private float yPos;
+    private double latitude;
+    private double longitude;
     private String imageUrl;
-    private boolean isSolid;
+    private boolean isSolid = true;
     private boolean red, green, yellow, blue;
     private String header;
     private String subHeaderOne;
@@ -26,24 +28,26 @@ public class CustomMarker {
     //TODO Fixa ett sätt att få referens från bilden jag valt för markören och spara den någonstans.
 
     public CustomMarker(){
-
+        id++;
     }
 
-    public CustomMarker(float xPos, float yPos){
-        this(0000, "placeholder", xPos, yPos, true);
+    public CustomMarker(double latitude, double longitude){
+        this(0000, "placeholder", latitude,longitude, true);
+        id++;
     }
 
-    public CustomMarker(int markerId, float xPos, float yPos){
-        this(markerId, "name", xPos, yPos, true);
+    public CustomMarker(int markerId, LatLng latLng){
+        this(markerId, "name", 0,0, true);
+        id++;
     }
 
-    public CustomMarker(int markerId, String markerName, float xPos, float yPos, boolean red){
+    public CustomMarker(int markerId, String markerName, double latitude, double longitude, boolean red){
         id++;
         this.red = red;
         this.markerId = id;
         this.markerName = markerName;
-        this.xPos = xPos;
-        this.yPos = yPos;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public static int getId() {return id;}
@@ -55,11 +59,10 @@ public class CustomMarker {
     public String getMarkerName() {return markerName;}
     public void setMarkerName(String markerName) {this.markerName = markerName;}
 
-    public float getxPos() {return xPos;}
-    public void setxPos(float xPos) {this.xPos = xPos;}
-
-    public float getyPos() {return yPos;}
-    public void setyPos(float yPos) {this.yPos = yPos;}
+    public double getLatitude() { return latitude; }
+    public void setLatitude(double latitude) { this.latitude = latitude; }
+    public double getLongitude() { return longitude; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
 
     public String getImageUrl() {return imageUrl;}
     public void setImageUrl(String imageUrl) {this.imageUrl = imageUrl;}

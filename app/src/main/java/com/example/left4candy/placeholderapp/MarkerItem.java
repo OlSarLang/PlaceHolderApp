@@ -32,6 +32,4 @@ public class MarkerItem {
     public void setSubHeader(String subHeader) {
         this.subHeader = subHeader;
     }
-
-
 }

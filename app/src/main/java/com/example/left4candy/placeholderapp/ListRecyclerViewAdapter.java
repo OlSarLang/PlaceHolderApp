@@ -77,5 +77,4 @@ public class ListRecyclerViewAdapter extends RecyclerView.Adapter<ListRecyclerVi
     public interface onRecyclerViewItemClickListener{
         void onItemClickListener(View view, int position);
     }
-
 }
