@@ -23,6 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.style.UpdateLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -162,7 +163,7 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
                     @Override
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         profileBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
-                        imgV.setImageBitmap(getRoundedShape(profileBitmap));
+                        profileImage.setImageBitmap(getRoundedShape(profileBitmap));
                     }
 
                     @Override
@@ -175,12 +176,11 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
 
                     }
                 });
-                Toast.makeText(MainAdminActivity.this, "Profile picture loaded", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "Picture loaded");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(MainAdminActivity.this, "Profile picture failed to load", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -353,5 +353,11 @@ public class MainAdminActivity extends AppCompatActivity implements View.OnClick
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+    }
+
+    @Override
+    public void onStart(){
+        loadProfile();
+        super.onStart();
     }
 }
