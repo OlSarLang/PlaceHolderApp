@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,7 +49,7 @@ public class ListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference().child(userUid);
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("users/" + userUid);
         databaseMarkerRef = mDatabase.child("markers/");
 
         listRecyclerView = view.findViewById(R.id.listRecycler);

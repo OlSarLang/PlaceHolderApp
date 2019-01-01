@@ -70,13 +70,11 @@ public class AccountFragment extends Fragment {
 
     private FirebaseAuth mAuth;
     private StorageReference mStorage;
-    private StorageReference backgroundImageRef;
     private StorageReference profileImageRef;
     private StorageReference customImagesRef;
 
     private DatabaseReference mDatabaseRef;
-    private DatabaseReference userNameRef;
-    private DatabaseReference privacyRef;
+    private DatabaseReference userRef;
     private DatabaseReference imageDatabaseRef;
 
     private UploadTask uploadTask;
@@ -90,11 +88,17 @@ public class AccountFragment extends Fragment {
     private TextView userTextView;
     private Button buttonLogout;
     private Button mSelectProfileImage;
-    private Button mSelectBackgroundImage;
     private Button mSelectCustomImages;
     private CheckBox checkPrivate;
 
+    private TextView changeEmail;
+    private TextView changeNumber;
+    private TextView emailView;
+    private TextView numberView;
+
     private Boolean privacy = true;
+
+    public UserInfo userInfo = new UserInfo();
 
     private ProgressBar progressBar;
 
@@ -110,22 +114,31 @@ public class AccountFragment extends Fragment {
         View view = inflater.inflate(R.layout.account_fragment, container, false);
         mAuth = FirebaseAuth.getInstance();
         mStorage = FirebaseStorage.getInstance().getReference().child(userUid);
-        FirebaseUser user = mAuth.getCurrentUser();
+        final FirebaseUser user = mAuth.getCurrentUser();
 
-        backgroundImageRef = mStorage.child("images/background.jpg");
         profileImageRef = mStorage.child("images/profile.jpg");
         customImagesRef = mStorage.child("images/custom/");
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child(userUid);
-        userNameRef = FirebaseDatabase.getInstance().getReference().child(userUid + "/UserName");
-        privacyRef = FirebaseDatabase.getInstance().getReference().child(userUid + "/Privacy");
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("users/" + userUid);
+        userRef = FirebaseDatabase.getInstance().getReference().child("users/" + userUid + "/userinfo");
         imageDatabaseRef = mDatabaseRef.child("/images");
 
-        userNameRef.addValueEventListener(new ValueEventListener() {
+        checkPrivate = view.findViewById(R.id.checkPrivate);
+        userTextView = view.findViewById(R.id.accountName);
+
+        changeEmail = view.findViewById(R.id.changeEmail);
+        changeNumber = view.findViewById(R.id.changeNr);
+        emailView = view.findViewById(R.id.emailAccountTextView);
+        numberView = view.findViewById(R.id.phoneTextView);
+
+        userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.getValue() != null){
-                    userName = dataSnapshot.getValue(String.class);
-                    userTextView.setText(userName);
+                    userInfo = dataSnapshot.getValue(UserInfo.class);
+                    userTextView.setText(userInfo.getUserName());
+                    checkPrivate.setChecked(userInfo.isPrivacy());
+                    numberView.setText(userInfo.getPhoneNumber());
+                    emailView.setText(userInfo.getEmail());
                     Toast.makeText(getContext(), "Username " + userName, Toast.LENGTH_LONG).show();
                 }
             }
@@ -137,27 +150,25 @@ public class AccountFragment extends Fragment {
 
         changeProfileImage = view.findViewById(R.id.changeProfileImage);
 
-        userTextView = view.findViewById(R.id.accountName);
-        userTextView.setText(userName);
-
         userTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
 
-                alert.setTitle("Change accountname");
-                alert.setMessage("Change name here yo");
+                alert.setTitle(getResources().getString(R.string.ChangeName));
+                alert.setMessage(getResources().getString(R.string.ChangeNameBelow));
                 final EditText input = new EditText(getContext());
                 input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(25)});
                 alert.setView(input);
 
-                alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                alert.setPositiveButton(getResources().getString(R.string.Save), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        userNameRef.setValue(input.getText().toString());
+                        userInfo.setUserName(input.getText().toString());
+                        userRef.setValue(userInfo);
                     }
                 });
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                alert.setNegativeButton(getResources().getString(R.string.Cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -168,27 +179,73 @@ public class AccountFragment extends Fragment {
             }
         });
 
-        checkPrivate = view.findViewById(R.id.checkPrivate);
-        privacyRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        changeNumber.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue() != null){
-                    privacy = (Boolean) dataSnapshot.getValue();
-                    checkPrivate.setChecked(privacy);
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void onClick(View v) {
+                AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
 
+                alert.setTitle(getResources().getString(R.string.ChangeNumber));
+                alert.setMessage(getResources().getString(R.string.ChangeNumberBelow));
+                final EditText input = new EditText(getContext());
+                input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(25)});
+                alert.setView(input);
+
+                alert.setPositiveButton(getResources().getString(R.string.Save), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        userInfo.setPhoneNumber(input.getText().toString());
+                        userRef.setValue(userInfo);
+                    }
+                });
+                alert.setNegativeButton(getResources().getString(R.string.Cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+                alert.show();
             }
         });
+
+        changeEmail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+
+                alert.setTitle(getResources().getString(R.string.ChangeEmail));
+                alert.setMessage(getResources().getString(R.string.ChangeEmailBelow));
+                final EditText input = new EditText(getContext());
+                input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(25)});
+                alert.setView(input);
+
+                alert.setPositiveButton(getResources().getString(R.string.Save), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        userInfo.setEmail(input.getText().toString());
+                        userRef.setValue(userInfo);
+                    }
+                });
+                alert.setNegativeButton(getResources().getString(R.string.Cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+                alert.show();
+            }
+        });
+
         checkPrivate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    privacyRef.setValue(true);
+                    userInfo.setPrivacy(isChecked);
+                    userRef.setValue(userInfo);
                 }else if(!isChecked){
-                    privacyRef.setValue(false);
+                    userInfo.setPrivacy(isChecked);
+                    userRef.setValue(userInfo);
                 }
             }
         });
@@ -215,19 +272,6 @@ public class AccountFragment extends Fragment {
                 intent.setType("image/*");
                 thisReference = profileImageRef;
                 thisImageType = "profile";
-                startActivityForResult(intent, GALLERY_INTENT);
-            }
-        });
-
-        mSelectBackgroundImage = view.findViewById(R.id.mSelectBackgroundImage);
-        mSelectBackgroundImage.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                thisReference = backgroundImageRef;
-                thisImageType = "background";
-                //TODO Samma som nedanför
                 startActivityForResult(intent, GALLERY_INTENT);
             }
         });
@@ -269,8 +313,6 @@ public class AccountFragment extends Fragment {
             final StorageReference fileReference;
             if(thisReference == profileImageRef) {
                 fileReference = thisReference;
-            }else if(thisReference == backgroundImageRef){
-                fileReference = thisReference;
             }else{
                 fileReference = thisReference.child(System.currentTimeMillis() + "." + getFileExtension(thisUri));
             }
@@ -298,7 +340,6 @@ public class AccountFragment extends Fragment {
                             }
                             loadProfile();
                             ((MainAdminActivity)getActivity()).loadProfile();
-                            ((MainAdminActivity)getActivity()).changeOverviewBackground();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override

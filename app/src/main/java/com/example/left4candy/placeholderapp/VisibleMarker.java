@@ -4,30 +4,28 @@ import android.graphics.Bitmap;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
-public class VisibleMarker {
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+
+public class VisibleMarker{
 
     //What I need to create
     private int markerId;
-    private float xPos;
-    private float yPos;
+    private LatLng latLng;
     private ImageView image;
     private Bitmap solidColor;
     private ImageButton imageCircle;
 
-    public VisibleMarker(int markerId, float xPos, float yPos){
+    public VisibleMarker(int markerId, LatLng latLng){
         this.markerId = markerId;
-        this.xPos = xPos;
-        this.yPos = yPos;
+        this.latLng = latLng;
     }
 
     public int getMarkerId() {return markerId;}
     public void setMarkerId(int markerId) {this.markerId = markerId;}
 
-    public float getxPos() {return xPos;}
-    public void setxPos(float xPos) {this.xPos = xPos;}
-
-    public float getyPos() {return yPos;}
-    public void setyPos(float yPos) {this.yPos = yPos;}
+    public LatLng getLatLng() {return latLng;}
+    public void setLatLng(LatLng latLng) {this.latLng = latLng;}
 
     public ImageView getImage() {return image;}
     public void setImage(ImageView image) {

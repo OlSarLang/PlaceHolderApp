@@ -1,23 +1,32 @@
 package com.example.left4candy.placeholderapp;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -44,6 +53,19 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -52,6 +74,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -61,15 +84,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OverviewFragment extends Fragment {
+public class OverviewFragment extends Fragment implements OnMapReadyCallback {
     private static final String TAG = "OverviewFragment";
     String userUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+    private static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
 
     private int picId;
 
     private FirebaseAuth mAuth;
     private StorageReference mStorage;
-    private StorageReference backgroundImageRef;
     private StorageReference customImagesRef;
     private DatabaseReference mDatabase;
     private DatabaseReference databaseMarkerRef;
@@ -79,28 +103,37 @@ public class OverviewFragment extends Fragment {
     private List<CustomMarker> customMarkerList; //List over all loaded markers
     private CustomMarker customMarker;
     private Map<CustomMarker, ImageButton> pressableCustomMarkerList; //List of the markers shown, this is used to figure out which marker the user pressed and then gets that marker from customMarkerList
-    private List<ImageButton> visibleCustomMarkerList; //The visible markers of the above mentioned list
-    private VisibleMarker visibleMarker;
-    private ImageButton imageCircle;
+    private List<Marker> markerList; //The visible markers of the above mentioned list
 
     private RecyclerView recyclerView;
     private MarkerRecyclerViewAdapter recyclerViewAdapter;
     private DatabaseReference iDatabaseRef;
+    private DatabaseReference userRef;
     private RecyclerView imageRecyclerView;
     private ImagePickerAdapter iAdapter;
     private List<Upload> iUploads;
-    private ToggleButton togglePlaceMarker;
+    private FloatingActionButton togglePlaceMarker;
+    private FloatingActionButton togglePlaceHomePos;
 
     private Bitmap redMarker;
     private Bitmap greenMarker;
     private Bitmap blueMarker;
     private Bitmap yellowMarker;
-    private Bitmap mapMap;
+    private Bitmap markerMap;
 
     private View thisView;
 
+    private UserInfo userInfo;
+
     long timeWhenDown;
     private boolean placeMarker;
+    private boolean placeHomePos;
+
+    //Maps
+    private GoogleMap map;
+    private MapView mMapView;
+    public LatLngBounds bounds = new LatLngBounds(new LatLng(55.978793,10.336775), new LatLng(65.833435, 25.713965));
+    private GeoPoint gP;
 
 
     //solid color markers
@@ -109,33 +142,23 @@ public class OverviewFragment extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
         //FIREBASE USER INFO
         mAuth = FirebaseAuth.getInstance();
         mStorage = FirebaseStorage.getInstance().getReference().child(userUid);
+        userRef = FirebaseDatabase.getInstance().getReference().child("users/" + userUid + "/userinfo");
 
         //FIREBASE IMAGES
-        backgroundImageRef = mStorage.child("images/background.jpg");
         customImagesRef = mStorage.child("images/custom/" + picId);
 
         //FIREBASE MARKERS
-        mDatabase = FirebaseDatabase.getInstance().getReference().child(userUid);
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("users/").child(userUid);
         iDatabaseRef = mDatabase.child("images/custom/");
         databaseMarkerRef = mDatabase.child("markers/");
 
         customMarkerList = new ArrayList<>();
-        visibleCustomMarkerList = new ArrayList<>();
-        databaseMarkerRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d("onDataChange()", "reached");
-                getDatabase(dataSnapshot);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        markerList = new ArrayList<>();
 
         //TODO ondata change listener instead of loadimages
 
@@ -151,7 +174,29 @@ public class OverviewFragment extends Fragment {
         greenMarker = Bitmap.createScaledBitmap(green, width, height, false);
         blueMarker = Bitmap.createScaledBitmap(blue, width, height, false);
         yellowMarker = Bitmap.createScaledBitmap(yellow, width, height, false);
-        super.onCreate(savedInstanceState);
+
+        databaseMarkerRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                getDatabase(dataSnapshot);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        userRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() != null){
+                    userInfo = dataSnapshot.getValue(UserInfo.class);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
     }
 
     @Nullable
@@ -161,48 +206,58 @@ public class OverviewFragment extends Fragment {
 
         togglePlaceMarker = view.findViewById(R.id.togglePlaceMarker);
 
-        togglePlaceMarker.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        togglePlaceMarker.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    togglePlaceMarker.setBackgroundDrawable(ContextCompat.getDrawable(getContext(), R.drawable.colorred));
+            public void onClick(View v) {
+                if(placeMarker == false){
+                    togglePlaceHomePos.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorSecondary));
+                    togglePlaceMarker.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorSecondaryDark));
+                    placeHomePos = false;
                     placeMarker = true;
-                }else{
-                    togglePlaceMarker.setBackgroundDrawable(ContextCompat.getDrawable(getContext(), R.drawable.colorgreen));
+                }else if(placeMarker == true){
+                    togglePlaceMarker.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorSecondary));
                     placeMarker = false;
+                }
+
+            }
+        });
+
+        togglePlaceHomePos = view.findViewById(R.id.placeHomePos);
+        togglePlaceHomePos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(placeHomePos == false){
+                    togglePlaceMarker.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorSecondary));
+                    togglePlaceHomePos.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorSecondaryDark));
+                    placeMarker = false;
+                    placeHomePos = true;
+                }else if(placeHomePos == true){
+                    togglePlaceHomePos.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorSecondary));
+                    placeHomePos = false;
                 }
             }
         });
-        togglePlaceMarker.setBackgroundDrawable(getResources().getDrawable(R.drawable.colorgreen));
+
         myLayout = view.findViewById(R.id.rl_container);
-        loadProfile();
-        addTouchListener();
+
+
+        mMapView = view.findViewById(R.id.mapView);
+        initGoogleMap(savedInstanceState);
 
         return view;
     }
 
     @Override
     public void onResume() {
-        databaseMarkerRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d("onDataChange()", "reached");
-                getDatabase(dataSnapshot);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
         super.onResume();
+        mMapView.onResume();
     }
 
     public void getDatabase(DataSnapshot dataSnapshot){
-        Log.d("getDatabase()", "reached");
         myLayout.removeAllViewsInLayout();
         customMarkerList.clear();
-        visibleCustomMarkerList.clear();
+        markerList.clear();
+        map.clear();
         for(DataSnapshot ds : dataSnapshot.getChildren()){
             CustomMarker cmMarker = new CustomMarker();
             cmMarker = ds.getValue(CustomMarker.class);
@@ -212,34 +267,9 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-    private void addTouchListener(){
+    public void createMarker(LatLng latLng){
 
-        myLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-
-                float x = Math.round(event.getX());
-                float y = Math.round(event.getY());
-
-                if(placeMarker == true){
-                    createMarker(x-70, y-70);
-                    togglePlaceMarker.setChecked(false);
-                }
-
-                System.out.println("Coordinates: X=" + x +" Y="+ y);
-
-                return false;
-            }
-        });
-
-    }
-
-    public void createMarker(float x, float y){
-        final float placeX = x;
-        final float placeY = y;
-
-
-        customMarker = new CustomMarker(placeX, placeY);
+        customMarker = new CustomMarker(latLng.latitude, latLng.longitude);
 
         customMarker.setMarkerName("Hope it works");
 
@@ -259,7 +289,6 @@ public class OverviewFragment extends Fragment {
         aBuilder.setView(mView);
         initRecyclerView(mView, customMarker);
         final AlertDialog dialog = aBuilder.create();
-        Log.d("AlertDialog ", "has been created");
 
         radioGroup.check(R.id.radioRed);
         customMarker.setRed(true);
@@ -286,7 +315,6 @@ public class OverviewFragment extends Fragment {
                     customMarker.setYellow(false);
                     customMarker.setSolid(true);
                     markerImage.setImageResource(R.drawable.colorred);
-                    Log.d("Radiogroup", "Red");
                 }else if(checkedId == R.id.radioGreen) {
                     customMarker.setRed(false);
                     customMarker.setGreen(true);
@@ -358,68 +386,45 @@ public class OverviewFragment extends Fragment {
 
     @SuppressLint("ClickableViewAccessibility")
     public void loadMarker(final CustomMarker customMarker){
-        visibleMarker = new VisibleMarker(customMarker.getMarkerId(), customMarker.getxPos(), customMarker.getyPos());
+        final LatLng markerPos = new LatLng(customMarker.getLatitude(), customMarker.getLongitude());
 
-        imageCircle = new ImageButton(getActivity());
-        imageCircle.setForegroundGravity(Gravity.LEFT);
-        imageCircle.setBackground(null);
-        final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
-        );
-
-        layoutParams.setMargins((int)visibleMarker.getxPos(), (int)visibleMarker.getyPos(), 0, 0);
-        checkImageOrColor(customMarker, imageCircle, "MapMarker");
-        imageCircle.setLayoutParams(layoutParams);
-
-        imageCircle.setOnTouchListener(new View.OnTouchListener() {
-            int prevX, prevY;
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(imageCircle.getLayoutParams());
-                if(event.getAction() == MotionEvent.ACTION_DOWN){
-                    timeWhenDown = System.currentTimeMillis();
-                    Log.d("Action Down: " , String.valueOf(timeWhenDown));
-                    return true;
-                }
-                if(event.getAction() == MotionEvent.ACTION_MOVE){
-                    if(System.currentTimeMillis() > timeWhenDown + 500){
-                        v.setVisibility(View.INVISIBLE);
-                        Log.d("Action Move: ", String.valueOf(System.currentTimeMillis()));
-                        params.topMargin += (int)event.getRawY() - prevY;
-                        prevY = (int)event.getRawY();
-                        params.leftMargin += (int)event.getRawX() - prevX;
-                        prevX = (int)event.getRawX();
-                        Log.d("params", String.valueOf(params));
-                        v.setLayoutParams(params); //It never moves the original! But it creates a new one where I let go because of the database valuelistener!
-                        return true;
+        Marker mkr;
+        if(!customMarker.isSolid()){
+            Picasso.get()
+                    .load(customMarker.getImageUrl())
+                    .into(new Target() {
+                        @Override
+                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                            markerMap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+                            Marker mkr = map.addMarker(new MarkerOptions().position(markerPos).icon(BitmapDescriptorFactory.fromBitmap(getRoundedShape(markerMap))));
+                            mkr.setDraggable(true);
+                            markerList.add(mkr);
                         }
-                }
-                if(event.getAction() == MotionEvent.ACTION_UP){
-                    if(System.currentTimeMillis() > timeWhenDown + 500){
-                        customMarker.setyPos(event.getY()-70);
-                        customMarker.setxPos(event.getX()-70);
-                        databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
-                        databaseMarkerRef.setValue(customMarker);
-                        Log.d("Action Up: " , String.valueOf(System.currentTimeMillis()));
-
-                        return true;
-                    }else if (System.currentTimeMillis()-500 < timeWhenDown){
-                        ImageButton clickedButton = (ImageButton) v;
-                        int index = visibleCustomMarkerList.indexOf(clickedButton);
-                        if(index!=-1){
-                            System.out.println("Clicked marker " + index);
-                            showMarker(customMarkerList.get(index));
+                        @Override
+                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
                         }
-                        Log.d("Action Up: " , String.valueOf(System.currentTimeMillis()));
-                        return true;
-                    }
-                }
-                return true;
-            }
-        });
-        myLayout.addView(imageCircle);
-        visibleMarker.setImageCircle(imageCircle);
-        visibleCustomMarkerList.add(imageCircle);
+                        @Override
+                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+                        }
+                    });
+        }
+        if(customMarker.isRed() == true){
+            mkr = map.addMarker(new MarkerOptions().position(markerPos).icon(BitmapDescriptorFactory.fromBitmap(redMarker)));
+            mkr.setDraggable(true);
+            markerList.add(mkr);
+        }else if(customMarker.isGreen() == true){
+            mkr = map.addMarker(new MarkerOptions().position(markerPos).icon(BitmapDescriptorFactory.fromBitmap(greenMarker)));
+            mkr.setDraggable(true);
+            markerList.add(mkr);
+        }else if(customMarker.isBlue() == true){
+            mkr = map.addMarker(new MarkerOptions().position(markerPos).icon(BitmapDescriptorFactory.fromBitmap(blueMarker)));
+            mkr.setDraggable(true);
+            markerList.add(mkr);
+        }else if(customMarker.isYellow() == true){
+            mkr = map.addMarker(new MarkerOptions().position(markerPos).icon(BitmapDescriptorFactory.fromBitmap(yellowMarker)));
+            mkr.setDraggable(true);
+            markerList.add(mkr);
+        }
     }
 
     public void showMarker(final CustomMarker customMarker){
@@ -469,7 +474,6 @@ public class OverviewFragment extends Fragment {
                         customMarker.setYellow(false);
                         customMarker.setSolid(true);
                         markerImage.setImageResource(R.drawable.colorred);
-                        Log.d("Radiogroup", "Red");
                     }else if(checkedId == R.id.radioGreen) {
                         customMarker.setRed(false);
                         customMarker.setGreen(true);
@@ -592,29 +596,6 @@ public class OverviewFragment extends Fragment {
         showMarker(customMarkerList.get(position));
     }
 
-    //IMAGES//
-    public void loadProfile(){
-        loadImage(backgroundImageRef, myLayout);
-    }
-
-    public void loadImage(StorageReference ref, final FrameLayout imgV){
-        ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                Glide.with(OverviewFragment.this).load(uri).apply(RequestOptions.placeholderOf(R.drawable.ic_launcher_background)).into(new SimpleTarget<Drawable>() {
-                    @Override
-                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                        imgV.setBackground(resource);
-                    }
-                });
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-            }
-        });
-    }
-
     public class MyAppGlideModule extends AppGlideModule {
 
         @Override
@@ -684,8 +665,8 @@ public class OverviewFragment extends Fragment {
                     .into(new Target() {
                         @Override
                         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                            mapMap = Bitmap.createScaledBitmap(bitmap, width, height, false);
-                            imageView.setImageBitmap(getRoundedShape(mapMap));
+                            markerMap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+                            imageView.setImageBitmap(getRoundedShape(markerMap));
                         }
                         @Override
                         public void onBitmapFailed(Exception e, Drawable errorDrawable) {
@@ -750,7 +731,6 @@ public class OverviewFragment extends Fragment {
                 for(DataSnapshot postSnapshot : dataSnapshot.getChildren()){
                     Upload upload = postSnapshot.getValue(Upload.class);
                     iUploads.add(upload);
-                    Log.d("upload", upload.getMImageUrl());
                 }
                 iAdapter = new ImagePickerAdapter(getContext(), iUploads);
                 imageRecyclerView.setAdapter(iAdapter);
@@ -782,4 +762,145 @@ public class OverviewFragment extends Fragment {
         imageDialog.show();
     }
     //END IMAGES//
+
+    //Start Maps//
+    private void initGoogleMap(Bundle savedInstanceState){
+        Bundle mapViewBundle = null;
+        if(savedInstanceState != null){
+            mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
+        }
+        mMapView.onCreate(mapViewBundle);
+        mMapView.getMapAsync(this);
+    }
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+
+        Bundle mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY);
+        if(mapViewBundle == null){
+            mapViewBundle = new Bundle();
+            outState.putBundle(MAPVIEW_BUNDLE_KEY, mapViewBundle);
+        }
+        mMapView.onSaveInstanceState(mapViewBundle);
+    }
+    @Override
+    public void onMapReady(GoogleMap googleMap){
+        map = googleMap;
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        LatLng start = new LatLng(59.345317, 18.023556);
+        map.addMarker(new MarkerOptions().position(start).title("Marker in Stockholm"));
+        map.setLatLngBoundsForCameraTarget(bounds);
+        map.setMinZoomPreference(5);
+        map.moveCamera(CameraUpdateFactory.newLatLng(bounds.getCenter()));
+        map.setMyLocationEnabled(true);
+
+        map.getUiSettings().setMyLocationButtonEnabled(true);
+
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if(placeHomePos || placeMarker){
+                    return false;
+                }else {
+                    showMarker(customMarkerList.get(markerList.indexOf(marker)));
+                    return true;
+                }
+            }
+        });
+
+        map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                customMarker = customMarkerList.get(markerList.indexOf(marker));
+                databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
+                customMarker.setLatitude(marker.getPosition().latitude);
+                customMarker.setLongitude(marker.getPosition().longitude);
+                databaseMarkerRef.setValue(customMarker);
+            }
+        });
+
+        map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(final LatLng latLng) {
+                if(placeMarker == true){
+                    createMarker(latLng);
+                    togglePlaceMarker.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorSecondary));
+                    placeMarker = false;
+                }
+                if(placeHomePos == true){
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+
+                    alert.setTitle(getResources().getString(R.string.NewHomePos));
+                    alert.setMessage(getResources().getString(R.string.NewHomePosInfo) + "\n" + "Latitude: " + latLng.latitude + "\n" + "Longitude: " + latLng.longitude);
+                    alert.setPositiveButton(getResources().getString(R.string.Yes), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            togglePlaceHomePos.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorSecondary));
+                            userInfo.setLatitude(latLng.latitude);
+                            userInfo.setLongitude(latLng.longitude);
+                            userRef.setValue(userInfo);
+                            placeHomePos  = false;
+                        }
+                    });
+                    alert.setNegativeButton(getResources().getString(R.string.No), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+
+                    alert.show();
+                }
+            }
+        });
+    }
+    //End Maps//
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        mMapView.onStart();
+    }
+    @Override
+    public void onStop(){
+        super.onStop();
+        mMapView.onStop();
+    }
+    @Override
+    public void onPause(){
+        super.onPause();
+        mMapView.onPause();
+    }
+    @Override
+    public void onDestroy(){
+        mMapView.onDestroy();
+        super.onDestroy();
+    }
+    @Override
+    public void onLowMemory(){
+        super.onLowMemory();
+        mMapView.onLowMemory();
+    }
 }
