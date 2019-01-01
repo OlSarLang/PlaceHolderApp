@@ -257,7 +257,9 @@ public class OverviewFragment extends Fragment implements OnMapReadyCallback {
         myLayout.removeAllViewsInLayout();
         customMarkerList.clear();
         markerList.clear();
-        map.clear();
+        if (map != null){
+            map.clear();
+        }
         for(DataSnapshot ds : dataSnapshot.getChildren()){
             CustomMarker cmMarker = new CustomMarker();
             cmMarker = ds.getValue(CustomMarker.class);
@@ -502,7 +504,6 @@ public class OverviewFragment extends Fragment implements OnMapReadyCallback {
         markerImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "MarkerImage clicked", Toast.LENGTH_LONG).show();
                 openImagePicker(markerImage, customMarker);
             }
         });
@@ -786,6 +787,7 @@ public class OverviewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap){
         map = googleMap;
+        map.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)

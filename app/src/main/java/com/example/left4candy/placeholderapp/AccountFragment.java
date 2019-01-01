@@ -139,7 +139,6 @@ public class AccountFragment extends Fragment {
                     checkPrivate.setChecked(userInfo.isPrivacy());
                     numberView.setText(userInfo.getPhoneNumber());
                     emailView.setText(userInfo.getEmail());
-                    Toast.makeText(getContext(), "Username " + userName, Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -374,12 +373,10 @@ public class AccountFragment extends Fragment {
 
                     }
                 });
-                Toast.makeText(getContext(), "Profile picture loaded", Toast.LENGTH_LONG).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Profile picture failed to load", Toast.LENGTH_LONG).show();
             }
         });
     }
