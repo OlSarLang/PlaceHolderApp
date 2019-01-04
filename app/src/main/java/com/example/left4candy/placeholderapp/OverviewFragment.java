@@ -810,39 +810,6 @@ public class OverviewFragment extends Fragment implements OnMapReadyCallback {
 
         map.getUiSettings().setMyLocationButtonEnabled(true);
 
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                if(placeHomePos || placeMarker){
-                    return false;
-                }else {
-                    showMarker(customMarkerList.get(markerList.indexOf(marker)));
-                    return true;
-                }
-            }
-        });
-
-        map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
-            @Override
-            public void onMarkerDragStart(Marker marker) {
-
-            }
-
-            @Override
-            public void onMarkerDrag(Marker marker) {
-
-            }
-
-            @Override
-            public void onMarkerDragEnd(Marker marker) {
-                customMarker = customMarkerList.get(markerList.indexOf(marker));
-                databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
-                customMarker.setLatitude(marker.getPosition().latitude);
-                customMarker.setLongitude(marker.getPosition().longitude);
-                databaseMarkerRef.setValue(customMarker);
-            }
-        });
-
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(final LatLng latLng) {
@@ -875,6 +842,39 @@ public class OverviewFragment extends Fragment implements OnMapReadyCallback {
 
                     alert.show();
                 }
+            }
+        });
+
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if(placeHomePos || placeMarker){
+                    return false;
+                }else {
+                    showMarker(customMarkerList.get(markerList.indexOf(marker)));
+                    return true;
+                }
+            }
+        });
+
+        map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                customMarker = customMarkerList.get(markerList.indexOf(marker));
+                databaseMarkerRef = mDatabase.child("markers/" + customMarker.getMarkerId());
+                customMarker.setLatitude(marker.getPosition().latitude);
+                customMarker.setLongitude(marker.getPosition().longitude);
+                databaseMarkerRef.setValue(customMarker);
             }
         });
     }
